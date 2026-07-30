@@ -987,6 +987,496 @@ li[data-target].is-highlight {
 })();
 </script>
 <!-- @proto-gen:highlight:end -->
+<!-- @proto-gen:editor:start -->
+<style>
+/* Lightweight prototype editor */
+.proto-editor-toolbar {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  box-shadow: var(--shadow-xl);
+}
+
+.proto-editor-btn {
+  height: 32px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  border-radius: var(--radius-btn);
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.proto-editor-btn i,
+.proto-editor-btn svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+}
+
+.proto-editor-btn.is-active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.proto-editor-status {
+  position: fixed;
+  right: 24px;
+  bottom: 76px;
+  z-index: 1000;
+  max-width: 360px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  box-shadow: var(--shadow-lg);
+  color: var(--text-2);
+  font-size: 12px;
+  line-height: 1.45;
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+.proto-editor-status.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+body.proto-edit-on [data-edit-text] {
+  border-radius: 4px;
+  outline: 1px dashed transparent;
+  cursor: text;
+}
+
+body.proto-edit-on [data-edit-text]:hover {
+  outline-color: var(--primary);
+  background: var(--primary-light);
+}
+
+body.proto-edit-on [data-edit-text][contenteditable="true"]:focus {
+  outline: 2px solid var(--primary);
+  background: var(--card);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+body.proto-note-on .sections-col [data-comp],
+body.proto-note-on .sections-col [data-edit-text],
+body.proto-note-on .proto-layout [data-comp],
+body.proto-note-on .proto-layout [data-edit-text] {
+  cursor: crosshair;
+}
+
+.proto-note-pin {
+  position: absolute;
+  z-index: 999;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--card);
+  background: var(--warning);
+  color: #fff;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.proto-export-modal[hidden] {
+  display: none;
+}
+
+.proto-export-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(15, 23, 42, .38);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+}
+
+.proto-export-card {
+  width: min(720px, 90vw);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-xl);
+  padding: 16px;
+}
+
+.proto-export-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.proto-export-title {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.proto-export-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.proto-export-text {
+  width: 100%;
+  height: 360px;
+  resize: vertical;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  background: var(--muted);
+  padding: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--foreground);
+}
+</style>
+<script>
+(function() {
+  "use strict";
+
+  function ready(fn) {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", fn);
+    } else {
+      fn();
+    }
+  }
+
+  ready(function() {
+    var scope = document.querySelector("[data-proto-edit-scope]") ||
+      document.querySelector(".sections-col") ||
+      document.querySelector(".proto-layout") ||
+      document.body;
+    if (!scope || document.querySelector("[data-proto-editor-root]")) return;
+
+    var storageId = (
+      document.querySelector('meta[name="proto-editor-id"]')?.getAttribute("content") ||
+      window.location.pathname ||
+      document.title ||
+      "prototype"
+    ).slice(-160);
+    var TEXT_KEY = "proto-editor:text:" + storageId;
+    var NOTE_KEY = "proto-editor:notes:" + storageId;
+    var textEdits = load(TEXT_KEY, {});
+    var notes = load(NOTE_KEY, []);
+    var editMode = false;
+    var noteMode = false;
+    var statusTimer = null;
+
+    injectEditorShell();
+
+    var editButton = document.querySelector('[data-proto-action="toggle-edit"]');
+    var noteButton = document.querySelector('[data-proto-action="toggle-note"]');
+    var exportButton = document.querySelector('[data-proto-action="export-edits"]');
+    var closeExportButton = document.querySelector('[data-proto-action="close-export"]');
+    var downloadExportButton = document.querySelector('[data-proto-action="download-export"]');
+    var statusBox = document.querySelector("[data-proto-editor-status]");
+    var modal = document.querySelector("[data-proto-export-modal]");
+    var exportText = document.querySelector("[data-proto-export-text]");
+
+    prepareEditableText();
+    renderNotes();
+
+    scope.addEventListener("input", handleInput);
+    scope.addEventListener("paste", handlePaste);
+    scope.addEventListener("keydown", handleKeydown);
+    scope.addEventListener("click", handleNoteClick, true);
+
+    if (editButton) editButton.addEventListener("click", function() { setEditMode(!editMode); });
+    if (noteButton) noteButton.addEventListener("click", function() { setNoteMode(!noteMode); });
+    if (exportButton) exportButton.addEventListener("click", openExport);
+    if (closeExportButton) closeExportButton.addEventListener("click", function() { if (modal) modal.hidden = true; });
+    if (downloadExportButton) downloadExportButton.addEventListener("click", downloadExport);
+    if (window.lucide) window.lucide.createIcons();
+
+    function injectEditorShell() {
+      var toolbar = document.createElement("div");
+      toolbar.className = "proto-editor-toolbar";
+      toolbar.setAttribute("data-proto-editor-root", "");
+      toolbar.setAttribute("data-proto-editor", "");
+      toolbar.innerHTML = [
+        '<button class="proto-editor-btn" type="button" data-proto-action="toggle-edit" title="开启或关闭文案编辑"><i data-lucide="pencil" aria-hidden="true"></i><span>编辑</span></button>',
+        '<button class="proto-editor-btn" type="button" data-proto-action="toggle-note" title="在界面上添加调整标注"><i data-lucide="message-square-plus" aria-hidden="true"></i><span>标注</span></button>',
+        '<button class="proto-editor-btn" type="button" data-proto-action="export-edits" title="查看并下载修改清单"><i data-lucide="download" aria-hidden="true"></i><span>导出</span></button>'
+      ].join("");
+      document.body.appendChild(toolbar);
+
+      var status = document.createElement("div");
+      status.className = "proto-editor-status";
+      status.setAttribute("data-proto-editor", "");
+      status.setAttribute("data-proto-editor-status", "");
+      document.body.appendChild(status);
+
+      var exportModal = document.createElement("div");
+      exportModal.className = "proto-export-modal";
+      exportModal.setAttribute("data-proto-editor", "");
+      exportModal.setAttribute("data-proto-export-modal", "");
+      exportModal.hidden = true;
+      exportModal.innerHTML = [
+        '<div class="proto-export-card">',
+        '  <div class="proto-export-head">',
+        '    <div class="proto-export-title">原型修改清单</div>',
+        '    <div class="proto-export-actions">',
+        '      <button class="proto-editor-btn" type="button" data-proto-action="download-export"><i data-lucide="file-down" aria-hidden="true"></i><span>下载 JSON</span></button>',
+        '      <button class="proto-editor-btn" type="button" data-proto-action="close-export"><i data-lucide="x" aria-hidden="true"></i><span>关闭</span></button>',
+        '    </div>',
+        '  </div>',
+        '  <textarea class="proto-export-text" data-proto-export-text readonly></textarea>',
+        '</div>'
+      ].join("");
+      document.body.appendChild(exportModal);
+    }
+
+    function load(key, fallback) {
+      try {
+        var raw = window.localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch (error) {
+        return fallback;
+      }
+    }
+
+    function save(key, value) {
+      try {
+        window.localStorage.setItem(key, JSON.stringify(value));
+      } catch (error) {
+        showStatus("浏览器未允许本地保存，请直接导出当前修改清单。");
+      }
+    }
+
+    function sectionName(el) {
+      var section = el.closest(".proto-stack");
+      if (!section) return document.title || "";
+      var title = section.querySelector(".macos-title") || section.querySelector(".section-label");
+      return title ? title.textContent.trim() : section.id;
+    }
+
+    function componentName(el) {
+      var comp = el.closest("[data-comp]");
+      return comp ? comp.getAttribute("data-comp") : "";
+    }
+
+    function showStatus(text) {
+      if (!statusBox) return;
+      statusBox.textContent = text;
+      statusBox.classList.add("is-visible");
+      clearTimeout(statusTimer);
+      statusTimer = setTimeout(function() {
+        statusBox.classList.remove("is-visible");
+      }, 2600);
+    }
+
+    function shouldSkipText(node) {
+      if (!node.nodeValue || !node.nodeValue.trim()) return true;
+      var parent = node.parentElement;
+      if (!parent) return true;
+      if (parent.closest("[data-proto-editor]")) return true;
+      if (parent.closest("script,style,svg,textarea,input,select,option")) return true;
+      if (parent.closest("[data-edit-text]")) return true;
+      return false;
+    }
+
+    function prepareEditableText() {
+      var walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT, {
+        acceptNode: function(node) {
+          return shouldSkipText(node) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
+        }
+      });
+      var nodes = [];
+      while (walker.nextNode()) nodes.push(walker.currentNode);
+      nodes.forEach(function(node, index) {
+        var span = document.createElement("span");
+        var id = "txt-" + String(index + 1).padStart(4, "0");
+        span.setAttribute("data-edit-text", "");
+        span.setAttribute("data-edit-id", id);
+        span.setAttribute("data-original", node.nodeValue);
+        span.textContent = textEdits[id] && textEdits[id].newText !== undefined ? textEdits[id].newText : node.nodeValue;
+        node.parentNode.replaceChild(span, node);
+      });
+    }
+
+    function setEditMode(on) {
+      editMode = on;
+      if (editMode) noteMode = false;
+      document.body.classList.toggle("proto-edit-on", editMode);
+      document.body.classList.toggle("proto-note-on", noteMode);
+      if (editButton) editButton.classList.toggle("is-active", editMode);
+      if (noteButton) noteButton.classList.toggle("is-active", noteMode);
+      document.querySelectorAll("[data-edit-text]").forEach(function(el) {
+        if (editMode) {
+          el.setAttribute("contenteditable", "true");
+          el.setAttribute("spellcheck", "false");
+        } else {
+          el.removeAttribute("contenteditable");
+          el.removeAttribute("spellcheck");
+        }
+      });
+      showStatus(editMode ? "编辑模式已开启：直接点击界面或右侧 PRD 文字修改，修改会自动保存在本浏览器。" : "编辑模式已关闭。");
+    }
+
+    function setNoteMode(on) {
+      noteMode = on;
+      if (noteMode) editMode = false;
+      document.body.classList.toggle("proto-note-on", noteMode);
+      document.body.classList.toggle("proto-edit-on", editMode);
+      if (noteButton) noteButton.classList.toggle("is-active", noteMode);
+      if (editButton) editButton.classList.toggle("is-active", editMode);
+      document.querySelectorAll("[data-edit-text]").forEach(function(el) {
+        el.removeAttribute("contenteditable");
+        el.removeAttribute("spellcheck");
+      });
+      showStatus(noteMode ? "标注模式已开启：点击界面区域后写下需要调整的细节。" : "标注模式已关闭。");
+    }
+
+    function handleInput(event) {
+      var target = event.target.closest("[data-edit-text]");
+      if (!target) return;
+      var id = target.getAttribute("data-edit-id");
+      var original = target.getAttribute("data-original");
+      var current = target.textContent;
+      if (current === original) {
+        delete textEdits[id];
+      } else {
+        textEdits[id] = {
+          id: id,
+          section: sectionName(target),
+          component: componentName(target),
+          oldText: original,
+          newText: current
+        };
+      }
+      save(TEXT_KEY, textEdits);
+    }
+
+    function handlePaste(event) {
+      if (!editMode || !event.target.closest("[data-edit-text]")) return;
+      event.preventDefault();
+      var text = (event.clipboardData || window.clipboardData).getData("text/plain");
+      document.execCommand("insertText", false, text);
+    }
+
+    function handleKeydown(event) {
+      if (!editMode || !event.target.closest("[data-edit-text]")) return;
+      if (event.key === "Enter") {
+        event.preventDefault();
+        event.target.blur();
+      }
+    }
+
+    function handleNoteClick(event) {
+      if (!noteMode) return;
+      if (!scope.contains(event.target) || event.target.closest("[data-proto-editor]") || event.target.closest(".proto-note-pin")) return;
+      event.preventDefault();
+      event.stopPropagation();
+      var target = event.target.closest("[data-comp]") || event.target.closest("[data-edit-text]") || event.target;
+      var noteText = window.prompt("写下这个位置需要调整的细节：");
+      if (!noteText || !noteText.trim()) return;
+      notes.push({
+        id: "note-" + Date.now(),
+        section: sectionName(target),
+        component: componentName(target),
+        targetText: (target.innerText || target.textContent || "").trim().slice(0, 120),
+        note: noteText.trim(),
+        pageX: event.pageX,
+        pageY: event.pageY
+      });
+      save(NOTE_KEY, notes);
+      renderNotes();
+      showStatus("已添加 1 条标注。");
+    }
+
+    function renderNotes() {
+      document.querySelectorAll(".proto-note-pin").forEach(function(pin) { pin.remove(); });
+      notes.forEach(function(note, index) {
+        var pin = document.createElement("button");
+        pin.type = "button";
+        pin.className = "proto-note-pin";
+        pin.textContent = String(index + 1);
+        pin.title = note.note;
+        pin.style.left = Math.max(8, note.pageX - 11) + "px";
+        pin.style.top = Math.max(8, note.pageY - 11) + "px";
+        pin.addEventListener("click", function(event) {
+          event.preventDefault();
+          event.stopPropagation();
+          var next = window.prompt("编辑标注内容，留空则删除：", note.note);
+          if (next === null) return;
+          if (next.trim()) {
+            note.note = next.trim();
+          } else {
+            notes = notes.filter(function(item) { return item.id !== note.id; });
+          }
+          save(NOTE_KEY, notes);
+          renderNotes();
+        });
+        document.body.appendChild(pin);
+      });
+    }
+
+    function exportPayload() {
+      var textChanges = Object.keys(textEdits).sort().map(function(id) { return textEdits[id]; });
+      return {
+        prototype: document.title || "proto-gen prototype",
+        source: window.location.href,
+        exportedAt: new Date().toISOString(),
+        textChangeCount: textChanges.length,
+        noteCount: notes.length,
+        textChanges: textChanges,
+        annotations: notes
+      };
+    }
+
+    function openExport() {
+      if (!modal || !exportText) return;
+      exportText.value = JSON.stringify(exportPayload(), null, 2);
+      modal.hidden = false;
+      showStatus("修改清单已生成。");
+    }
+
+    function downloadExport() {
+      var payload = JSON.stringify(exportPayload(), null, 2);
+      var blob = new Blob([payload], { type: "application/json;charset=utf-8" });
+      var url = URL.createObjectURL(blob);
+      var link = document.createElement("a");
+      link.href = url;
+      link.download = "proto-gen-edits.json";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+  });
+})();
+</script>
+<!-- @proto-gen:editor:end -->
 <script>/**
  * @license lucide v1.8.0 - ISC
  *
@@ -1013,6 +1503,7 @@ body { justify-content: flex-start; }
 .hr-actions { display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end; }
 .hr-select-pill { display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);background:var(--background);border-radius:var(--radius-btn);padding:6px 10px;font-size:12px;color:var(--foreground);cursor:pointer;font-family:var(--font-sans); }
 .hr-select-pill:hover { background:var(--muted); }
+.hr-readonly-pill { display:inline-flex;align-items:center;gap:6px;border:1px solid color-mix(in oklch, var(--primary) 28%, var(--border));background:color-mix(in oklch, var(--primary) 8%, var(--background));border-radius:var(--radius-btn);padding:6px 10px;font-size:12px;color:var(--primary);font-weight:650;white-space:nowrap; }
 .hr-pill-icon { width:12px;height:12px;color:var(--text-3); }
 .hr-two-col { display:grid;grid-template-columns:0.92fr 1.08fr;gap:12px;margin-bottom:12px; }
 .hr-two-col.bottom { grid-template-columns:1.05fr 0.95fr; }
@@ -1068,7 +1559,8 @@ body { justify-content: flex-start; }
 .hr-eval-row.muted { background:var(--muted);color:var(--text-2); }
 .hr-overlay { position:absolute;inset:0;background:color-mix(in oklch, var(--foreground) 26%, transparent);z-index:10; }
 .hr-modal-wrap { position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:11; }
-.hr-upload-dialog { width:560px; }
+.hr-upload-dialog { width:600px; }
+.hr-field-hint { border:1px solid var(--border);border-radius:var(--radius-btn);background:var(--muted);color:var(--text-2);font-size:11px;line-height:1.55;padding:8px 10px;margin-top:8px; }
 .hr-dropzone { border:1px dashed var(--border-2);border-radius:var(--radius-card);padding:22px;display:flex;flex-direction:column;align-items:center;gap:8px;background:var(--muted);text-align:center;margin:12px 0; }
 .hr-dropzone span { color:var(--text-2);font-size:11px; }.hr-drop-icon { width:28px;height:28px;color:var(--primary); }
 .hr-file-list { border:1px solid var(--border);border-radius:var(--radius-btn);overflow:hidden; }
@@ -1077,20 +1569,39 @@ body { justify-content: flex-start; }
 .hr-calendar-card { padding:14px; }
 .hr-conflict { display:flex;align-items:center;gap:8px;background:color-mix(in oklch, var(--warning) 12%, transparent);border:1px solid var(--warning-border);color:var(--warning);border-radius:var(--radius-btn);padding:8px 10px;font-size:11px;margin-bottom:12px; }
 .hr-conflict i { width:14px;height:14px; }
+.hr-privacy-note { display:flex;align-items:center;gap:8px;background:color-mix(in oklch, var(--primary) 8%, transparent);border:1px solid color-mix(in oklch, var(--primary) 24%, var(--border));color:var(--text-2);border-radius:var(--radius-btn);padding:8px 10px;font-size:11px;margin:-4px 0 12px; }
+.hr-privacy-note i { width:14px;height:14px;color:var(--primary); }
 .hr-week-grid { display:grid;grid-template-columns:repeat(5,1fr);gap:8px; }
 .hr-day-col { min-height:590px;border:1px solid var(--border);border-radius:var(--radius-card);background:var(--background);padding:8px; }
 .hr-day-head { font-weight:700;font-size:11px;color:var(--text-2);padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:8px; }
 .hr-event { border:1px solid var(--border);border-radius:var(--radius-btn);padding:8px;margin-bottom:8px;background:var(--card);font-size:10px;line-height:1.45; }
 .hr-event.conflict { border-color:var(--warning-border);background:color-mix(in oklch, var(--warning) 10%, transparent); }
+.hr-event.private { border-style:dashed;background:var(--muted);color:var(--text-2); }
+.hr-event.private strong,.hr-event.private span { color:var(--text-2); }
 .hr-event strong { display:block;font-family:var(--font-mono);color:var(--primary); }.hr-event span { display:block;font-size:11px;font-weight:650; }.hr-event em { display:block;font-style:normal;color:var(--text-3); }
+.hr-event.private strong,.hr-event.private span,.hr-event.private em { color:var(--text-2); }
 .hr-eval-drawer,.hr-salary-drawer { width:460px; }
 .hr-eval-form { padding:16px 18px;display:flex;flex-direction:column;gap:12px; }
+.hr-eval-template-card { border:1px solid var(--border);border-radius:var(--radius-btn);background:var(--muted);padding:10px 12px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;font-size:11px; }
+.hr-eval-template-card span { display:block;color:var(--text-3);margin-bottom:3px; }
+.hr-eval-template-card strong { font-size:13px; }
+.hr-eval-template-card em { color:var(--text-2);font-style:normal;line-height:1.45;text-align:right;max-width:230px; }
+.hr-eval-dimension-list { border:1px solid var(--border);border-radius:var(--radius-card);background:var(--background);padding:10px;display:flex;flex-direction:column;gap:8px; }
+.hr-dimension-head { display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px; }
+.hr-dimension-row { display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);padding-top:7px;font-size:11px;color:var(--text-2); }
+.hr-dimension-row em { font-style:normal;font-family:var(--font-mono);color:var(--foreground); }
+.hr-score-row { display:grid;grid-template-columns:minmax(0,1fr) 118px;gap:10px;align-items:center;border-top:1px solid var(--border);padding-top:8px;font-size:11px;color:var(--text-2); }
+.hr-score-row span { min-width:0;line-height:1.4; }
+.hr-score-row .form-combobox { height:32px;font-size:12px;padding:0 28px 0 10px; }
+.hr-score-output { height:auto;min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;background:var(--muted); }
+.hr-score-output strong { font-size:16px;font-family:var(--font-mono); }
+.hr-score-output span { color:var(--text-2);font-size:10px;line-height:1.45;text-align:right;max-width:220px; }
 .hr-hidden-evals { border:1px solid var(--border);border-radius:var(--radius-btn);padding:12px;background:var(--muted);font-size:11px;color:var(--text-2);line-height:1.6; }
 .hr-hidden-evals strong { display:flex;align-items:center;gap:6px;color:var(--foreground);margin-bottom:4px; }
-.hr-offer-summary { display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin-bottom:12px; }
-.hr-offer-step { border:1px solid var(--border);border-radius:var(--radius-card);background:var(--card);padding:10px;text-align:center; }
+.hr-offer-summary { display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px;margin-bottom:12px; }
+.hr-offer-step { min-height:62px;border:1px solid var(--border);border-radius:var(--radius-card);background:var(--card);padding:8px 5px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:0; }
 .hr-offer-step.active { border-color:var(--primary);background:var(--primary-light); }
-.hr-offer-step strong { display:block;font-size:20px;font-family:var(--font-mono); }.hr-offer-step span { font-size:10px;color:var(--text-2); }
+.hr-offer-step strong { display:block;font-size:15px;font-family:var(--font-mono);line-height:1;flex-shrink:0; }.hr-offer-step span { display:block;width:100%;font-size:9px;color:var(--text-2);line-height:1.2;white-space:nowrap;min-width:0;text-align:center; }
 .hr-kanban { display:grid;grid-template-columns:repeat(5,1fr);gap:10px; }
 .hr-kanban-col { background:var(--muted);border:1px solid var(--border);border-radius:var(--radius-card);padding:8px;min-height:650px; }
 .hr-kanban-head { display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:12px;margin-bottom:8px; }
@@ -1107,25 +1618,25 @@ body { justify-content: flex-start; }
 .hr-stage-time strong { font-family:var(--font-mono); }
 .hr-settings-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
 .hr-settings-grid .info-card { min-height:250px; }
-.proto-edit-toolbar { position:fixed;right:24px;bottom:24px;z-index:1000;display:flex;align-items:center;gap:6px;padding:8px;border:1px solid var(--border);border-radius:var(--radius-card);background:var(--card);box-shadow:var(--shadow-xl); }
-.proto-edit-btn { height:32px;border:1px solid var(--border);background:var(--background);color:var(--foreground);border-radius:var(--radius-btn);padding:0 10px;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:650;cursor:pointer;white-space:nowrap; }
-.proto-edit-btn i,.proto-edit-btn svg { width:14px;height:14px; }
-.proto-edit-btn.is-active { background:var(--primary);border-color:var(--primary);color:var(--primary-foreground); }
-.proto-edit-btn.is-danger { color:var(--danger); }
-.proto-edit-status { position:fixed;right:24px;bottom:76px;z-index:1000;max-width:360px;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-card);background:var(--card);box-shadow:var(--shadow-lg);color:var(--text-2);font-size:12px;line-height:1.45;opacity:0;transform:translateY(6px);pointer-events:none;transition:opacity .18s ease,transform .18s ease; }
-.proto-edit-status.is-visible { opacity:1;transform:translateY(0); }
-body.proto-edit-on [data-edit-text] { border-radius:4px;outline:1px dashed transparent;cursor:text; }
-body.proto-edit-on [data-edit-text]:hover { outline-color:var(--primary);background:var(--primary-light); }
-body.proto-edit-on [data-edit-text][contenteditable="true"]:focus { outline:2px solid var(--primary);background:var(--card);box-shadow:0 0 0 3px var(--primary-light); }
-body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [data-edit-text] { cursor:crosshair; }
-.proto-note-pin { position:absolute;z-index:999;width:22px;height:22px;border-radius:50%;border:2px solid var(--card);background:var(--warning);color:#fff;box-shadow:var(--shadow-md);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;cursor:pointer; }
-.proto-export-modal[hidden] { display:none; }
-.proto-export-modal { position:fixed;inset:0;z-index:1100;background:rgba(15,23,42,.38);display:flex;align-items:center;justify-content:center;padding:32px; }
-.proto-export-card { width:min(720px,90vw);background:var(--card);border:1px solid var(--border);border-radius:var(--radius-card);box-shadow:var(--shadow-xl);padding:16px; }
-.proto-export-head { display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px; }
-.proto-export-title { font-size:15px;font-weight:800; }
-.proto-export-actions { display:flex;align-items:center;gap:8px; }
-.proto-export-text { width:100%;height:360px;resize:vertical;border:1px solid var(--border);border-radius:var(--radius-btn);background:var(--muted);padding:12px;font-family:var(--font-mono);font-size:11px;line-height:1.6;color:var(--foreground); }
+.hr-perm-context { display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:14px 0 12px;padding:0 2px; }
+.hr-breadcrumb { color:var(--text-3);font-size:11px;font-weight:650;margin-bottom:5px; }
+.hr-permission-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start; }
+.hr-permission-wide { grid-column:1 / -1; }
+.hr-setting-lines { display:flex;flex-direction:column;gap:8px;margin-top:12px;font-size:11px; }
+.hr-setting-lines div { display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--border);padding-bottom:7px; }
+.hr-setting-lines div:last-child { border-bottom:none;padding-bottom:0; }
+.hr-setting-lines span { color:var(--text-3); }
+.hr-setting-lines strong { font-weight:650;text-align:right; }
+.hr-rule-summary { display:flex;flex-direction:column;gap:8px;margin-top:12px; }
+.hr-rule-summary span { display:grid;grid-template-columns:92px 1fr;gap:8px;border:1px solid var(--border);border-radius:var(--radius-btn);padding:8px;background:var(--background);font-size:11px; }
+.hr-rule-summary b { font-size:11px; }
+.hr-rule-summary em { color:var(--text-2);font-style:normal;line-height:1.45; }
+.hr-preview-grid { display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px; }
+.hr-preview-card { border:1px solid var(--border);border-radius:var(--radius-card);background:var(--background);padding:10px;display:flex;flex-direction:column;gap:7px;min-height:140px; }
+.hr-preview-card.private { border-style:dashed;background:var(--muted);color:var(--text-2); }
+.hr-preview-card strong { font-size:12px;line-height:1.4; }
+.hr-preview-card em { color:var(--text-2);font-style:normal;font-size:11px;line-height:1.45; }
+.hr-preview-card .btn { margin-top:auto;align-self:flex-start; }
 @media (max-width: 900px) { .proto-layout { transform:scale(.72); transform-origin:top left; } }
 </style>
 </head>
@@ -1143,6 +1654,7 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
 <a class="toc-item" href="#section-offer-salary"><span class="toc-dot"></span>Offer-02<span class="toc-mirror-tag">薪资方案与背调</span></a>
 <a class="toc-item" href="#section-data-center"><span class="toc-dot"></span>数据-01<span class="toc-mirror-tag">数据中心</span></a>
 <a class="toc-item" href="#section-settings"><span class="toc-dot"></span>设置-01<span class="toc-mirror-tag">系统设置</span></a>
+<a class="toc-item" href="#section-settings-calendar-permission"><span class="toc-dot"></span>设置-02<span class="toc-mirror-tag">面试日历权限</span></a>
   </nav>
   <div class="sections-col">
     
@@ -1191,7 +1703,6 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
           <div class="win-chrome-actions">
             <button class="win-chrome-btn" title="全局搜索"><i data-lucide="search" class="win-chrome-icon" aria-hidden="true"></i></button>
             <button class="win-chrome-btn" title="通知"><i data-lucide="bell" class="win-chrome-icon" aria-hidden="true"></i></button>
-            <div class="win-credits"><i data-lucide="calendar-clock" class="win-chrome-icon" aria-hidden="true"></i><span>2026 届秋招</span></div>
             <div class="win-avatar-chip"><span class="win-avatar">林</span><span class="badge-free">招聘负责人</span></div>
             <button class="win-chrome-btn" title="菜单"><i data-lucide="menu" class="win-chrome-icon" aria-hidden="true"></i></button>
           </div>
@@ -1344,7 +1855,6 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
           <div class="win-chrome-actions">
             <button class="win-chrome-btn" title="全局搜索"><i data-lucide="search" class="win-chrome-icon" aria-hidden="true"></i></button>
             <button class="win-chrome-btn" title="通知"><i data-lucide="bell" class="win-chrome-icon" aria-hidden="true"></i></button>
-            <div class="win-credits"><i data-lucide="calendar-clock" class="win-chrome-icon" aria-hidden="true"></i><span>2026 届秋招</span></div>
             <div class="win-avatar-chip"><span class="win-avatar">林</span><span class="badge-free">招聘负责人</span></div>
             <button class="win-chrome-btn" title="菜单"><i data-lucide="menu" class="win-chrome-icon" aria-hidden="true"></i></button>
           </div>
@@ -1461,7 +1971,6 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
           <div class="win-chrome-actions">
             <button class="win-chrome-btn" title="全局搜索"><i data-lucide="search" class="win-chrome-icon" aria-hidden="true"></i></button>
             <button class="win-chrome-btn" title="通知"><i data-lucide="bell" class="win-chrome-icon" aria-hidden="true"></i></button>
-            <div class="win-credits"><i data-lucide="calendar-clock" class="win-chrome-icon" aria-hidden="true"></i><span>2026 届秋招</span></div>
             <div class="win-avatar-chip"><span class="win-avatar">林</span><span class="badge-free">招聘负责人</span></div>
             <button class="win-chrome-btn" title="菜单"><i data-lucide="menu" class="win-chrome-icon" aria-hidden="true"></i></button>
           </div>
@@ -1600,7 +2109,6 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
           <div class="win-chrome-actions">
             <button class="win-chrome-btn" title="全局搜索"><i data-lucide="search" class="win-chrome-icon" aria-hidden="true"></i></button>
             <button class="win-chrome-btn" title="通知"><i data-lucide="bell" class="win-chrome-icon" aria-hidden="true"></i></button>
-            <div class="win-credits"><i data-lucide="calendar-clock" class="win-chrome-icon" aria-hidden="true"></i><span>2026 届秋招</span></div>
             <div class="win-avatar-chip"><span class="win-avatar">林</span><span class="badge-free">招聘负责人</span></div>
             <button class="win-chrome-btn" title="菜单"><i data-lucide="menu" class="win-chrome-icon" aria-hidden="true"></i></button>
           </div>
@@ -1655,7 +2163,11 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
               <div class="form-group" data-comp="upload-batch"><label class="form-label">招聘批次</label><div class="form-input form-combobox">2026 届秋招<i data-lucide="chevron-down" class="form-chevron" aria-hidden="true"></i></div></div>
               <div class="form-group" data-comp="upload-job"><label class="form-label">应聘岗位</label><div class="form-input form-combobox">产品经理<i data-lucide="chevron-down" class="form-chevron" aria-hidden="true"></i></div></div>
             </div>
-            <div class="form-group" data-comp="upload-source"><label class="form-label">简历来源</label><div class="form-input form-combobox">BOSS 直聘<i data-lucide="chevron-down" class="form-chevron" aria-hidden="true"></i></div></div>
+            <div class="form-row-2">
+              <div class="form-group" data-comp="upload-source"><label class="form-label">简历来源</label><div class="form-input form-combobox">BOSS 直聘<i data-lucide="chevron-down" class="form-chevron" aria-hidden="true"></i></div></div>
+              <div class="form-group" data-comp="upload-hierarchy"><label class="form-label">候选人层级</label><div class="form-input form-combobox">中层管理<i data-lucide="chevron-down" class="form-chevron" aria-hidden="true"></i></div></div>
+            </div>
+            <div class="hr-field-hint" data-comp="upload-hierarchy-options">层级选项：决策层 / 中层管理 / 基层管理 / 基层；用于人才库分层、面试官匹配和数据分析。</div>
             <div class="hr-dropzone" data-comp="upload-dropzone">
               <i data-lucide="file-up" class="hr-drop-icon" aria-hidden="true"></i>
               <strong>拖拽 PDF / Word 简历到此处</strong>
@@ -1687,6 +2199,7 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
 <li data-target="upload-batch"><strong>招聘批次字段</strong>：上传前必填，默认带入当前候选人列表筛选中的招聘批次；上传后的候选人应聘关系必须关联该批次。</li>
 <li data-target="upload-job"><strong>应聘岗位字段</strong>：上传前必填，默认带入当前筛选岗位；若单个文件解析出不同岗位，系统仍以本字段作为入库岗位。</li>
 <li data-target="upload-source"><strong>简历来源字段</strong>：上传前必填，支持 BOSS、51job、猎聘、官网、线下校招、猎头等渠道字典。</li>
+<li data-target="upload-hierarchy,upload-hierarchy-options"><strong>候选人层级字段</strong>：上传前可选择候选人层级，枚举包含决策层、中层管理、基层管理、基层；该字段随候选人应聘记录入库，并用于人才库分层筛选、面试官匹配和后续数据统计。</li>
 <li data-target="upload-dropzone"><strong>拖拽上传区</strong>：展示文件拖拽区域和选择文件按钮；支持 PDF 和 Word，支持多文件批量上传。</li>
 <li data-target="upload-file-list"><strong>文件解析列表</strong>：展示每个文件名和解析状态；解析成功、待确认岗位、疑似重复等状态需有明确徽标。</li>
 <li data-target="upload-file-list"><strong>异常处理</strong>：疑似重复候选人需要提示手机号或邮箱冲突，用户可选择覆盖、创建新应聘关系或跳过。</li>
@@ -1744,7 +2257,6 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
           <div class="win-chrome-actions">
             <button class="win-chrome-btn" title="全局搜索"><i data-lucide="search" class="win-chrome-icon" aria-hidden="true"></i></button>
             <button class="win-chrome-btn" title="通知"><i data-lucide="bell" class="win-chrome-icon" aria-hidden="true"></i></button>
-            <div class="win-credits"><i data-lucide="calendar-clock" class="win-chrome-icon" aria-hidden="true"></i><span>2026 届秋招</span></div>
             <div class="win-avatar-chip"><span class="win-avatar">林</span><span class="badge-free">招聘负责人</span></div>
             <button class="win-chrome-btn" title="菜单"><i data-lucide="menu" class="win-chrome-icon" aria-hidden="true"></i></button>
           </div>
@@ -1759,6 +2271,7 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
             </div>
             <div class="hr-actions">
   <button class="hr-select-pill" data-comp="calendar-filter-recruiter">招聘负责人：全部<i data-lucide="chevron-down" class="hr-pill-icon" aria-hidden="true"></i></button>
+  <span class="hr-readonly-pill" data-comp="calendar-permission-effective"><i data-lucide="lock" class="hr-pill-icon" aria-hidden="true"></i><span>当前权限：隐藏他人详情</span></span>
   <button class="hr-select-pill" data-comp="calendar-filter-interviewer">面试官：全部<i data-lucide="chevron-down" class="hr-pill-icon" aria-hidden="true"></i></button>
   <button class="hr-select-pill" >日期：2026-07-29<i data-lucide="chevron-down" class="hr-pill-icon" aria-hidden="true"></i></button>
 </div>
@@ -1769,8 +2282,9 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
     <div class="hr-actions"><button class="btn btn-secondary btn-sm"><i data-lucide="chevron-left" class="nav-icon" aria-hidden="true"></i>上周</button><button class="btn btn-secondary btn-sm">下周<i data-lucide="chevron-right" class="nav-icon" aria-hidden="true"></i></button><button class="btn btn-primary btn-sm"><i data-lucide="calendar-plus" class="nav-icon" aria-hidden="true"></i>安排面试</button></div>
   </div>
   <div class="hr-conflict" data-comp="calendar-conflict"><i data-lucide="triangle-alert" class="nav-icon" aria-hidden="true"></i> 检测到赵宁在 14:00-14:45 存在 2 场面试冲突，请重新协调时间。</div>
+  <div class="hr-privacy-note" data-comp="calendar-privacy-note"><i data-lucide="lock" class="nav-icon" aria-hidden="true"></i> 当前账号生效规则来自「系统设置 / 权限管理 / 面试日历详情权限」：非本人创建且本人未参与的日程只展示忙闲占用，不展示候选人、岗位和面试官详情。</div>
   <div class="hr-week-grid">
-    <div class="hr-day-col"><div class="hr-day-head">周一 07/27</div><div class="hr-event " data-comp="calendar-event"><strong>10:00</strong><span>产品经理 周沐</span><em>复试 · 林诗 / 陈越</em></div></div><div class="hr-day-col"><div class="hr-day-head">周二 07/28</div></div><div class="hr-day-col"><div class="hr-day-head">周三 07/29</div><div class="hr-event " data-comp="calendar-event"><strong>10:00</strong><span>数据分析 许知予</span><em>终试 · 林诗 / 管理层</em></div><div class="hr-event conflict" data-comp="calendar-conflict-event"><strong>14:00</strong><span>后端工程师 邵一凡</span><em>初试 · 林诗 / 赵宁</em></div><div class="hr-event conflict" data-comp="calendar-conflict-event"><strong>14:15</strong><span>前端工程师 陈澈</span><em>复试 · 王可 / 赵宁</em></div></div><div class="hr-day-col"><div class="hr-day-head">周四 07/30</div></div><div class="hr-day-col"><div class="hr-day-head">周五 07/31</div><div class="hr-event " data-comp="calendar-event"><strong>16:30</strong><span>HRBP 顾言</span><em>初试 · 王可 / 林诗</em></div></div>
+    <div class="hr-day-col"><div class="hr-day-head">周一 07/27</div><div class="hr-event " data-comp="calendar-event"><strong>10:00</strong><span>产品经理 周沐</span><em>复试 · 林诗 / 陈越</em></div></div><div class="hr-day-col"><div class="hr-day-head">周二 07/28</div></div><div class="hr-day-col"><div class="hr-day-head">周三 07/29</div><div class="hr-event " data-comp="calendar-event"><strong>10:00</strong><span>数据分析 许知予</span><em>终试 · 林诗 / 管理层</em></div><div class="hr-event conflict" data-comp="calendar-conflict-event"><strong>14:00</strong><span>后端工程师 邵一凡</span><em>初试 · 林诗 / 赵宁</em></div><div class="hr-event conflict" data-comp="calendar-conflict-event"><strong>14:15</strong><span>前端工程师 陈澈</span><em>复试 · 王可 / 赵宁</em></div></div><div class="hr-day-col"><div class="hr-day-head">周四 07/30</div><div class="hr-event private" data-comp="calendar-private-event"><strong>11:00</strong><span>他人创建日程</span><em>详情已隐藏 · 仅显示忙闲占用</em></div></div><div class="hr-day-col"><div class="hr-day-head">周五 07/31</div><div class="hr-event " data-comp="calendar-event"><strong>16:30</strong><span>HRBP 顾言</span><em>初试 · 王可 / 林诗</em></div></div>
   </div>
 </div>
         </div>
@@ -1784,11 +2298,14 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
           <div class="prd-section">
             <div class="prd-section__title">面试-01：面试日历</div>
             <ul>
-              <li data-target="calendar-filter-recruiter,calendar-filter-interviewer"><strong>日历筛选器</strong>：支持按招聘负责人、面试官、招聘批次、岗位和日期筛选面试安排。</li>
+              <li data-target="calendar-filter-recruiter,calendar-filter-interviewer"><strong>日历筛选器</strong>：支持按招聘负责人、面试官、招聘批次、岗位和日期筛选面试安排；详情权限不作为普通筛选项，由系统设置统一配置后自动生效。</li>
+<li data-target="calendar-permission-effective"><strong>当前权限提示</strong>：展示当前账号从系统设置生效的面试日历详情权限，仅作为只读提示，不允许普通用户在日历页自行切换。</li>
+<li data-target="calendar-privacy-note"><strong>日历详情权限说明</strong>：权限规则在系统设置 / 权限管理 / 面试日历详情权限中维护；非授权日程只显示忙闲占用，不展示候选人、岗位、面试官和候选人详情入口，且必须由 API 层强制控制。</li>
 <li data-target="calendar-tabs"><strong>视图切换</strong>：展示月视图、周视图、日视图三个 Tab；默认进入页面时展示周视图。</li>
 <li data-target="calendar-main"><strong>周视图日历</strong>：按工作日列展示日期、开始时间、应聘岗位、候选人姓名、面试轮次、招聘负责人和面试官。</li>
 <li data-target="calendar-conflict"><strong>冲突提醒条</strong>：当同一面试官存在时间重叠时，在日历上方展示冲突摘要，提醒招聘负责人重新协调。</li>
 <li data-target="calendar-conflict-event"><strong>冲突面试卡片</strong>：冲突日程在日历中使用警示状态标记，卡片保留原始面试信息并可点击进入候选人详情。</li>
+<li data-target="calendar-private-event"><strong>隐藏详情日程</strong>：非授权日程在日历中展示为只读占用卡片，不允许点击进入候选人详情，并提示详情已隐藏。</li>
 <li data-target="calendar-event"><strong>普通面试卡片</strong>：展示开始时间、岗位、候选人、轮次和参与人；点击后进入对应候选人详情页。</li>
             </ul>
           </div>
@@ -1843,7 +2360,6 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
           <div class="win-chrome-actions">
             <button class="win-chrome-btn" title="全局搜索"><i data-lucide="search" class="win-chrome-icon" aria-hidden="true"></i></button>
             <button class="win-chrome-btn" title="通知"><i data-lucide="bell" class="win-chrome-icon" aria-hidden="true"></i></button>
-            <div class="win-credits"><i data-lucide="calendar-clock" class="win-chrome-icon" aria-hidden="true"></i><span>2026 届秋招</span></div>
             <div class="win-avatar-chip"><span class="win-avatar">林</span><span class="badge-free">面试官</span></div>
             <button class="win-chrome-btn" title="菜单"><i data-lucide="menu" class="win-chrome-icon" aria-hidden="true"></i></button>
           </div>
@@ -1916,17 +2432,27 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
         <div class="env-drawer hr-eval-drawer" data-comp="eval-drawer">
           <div class="env-drawer__header"><span>填写复试评价 · 周沐</span><button class="modal-close-x" style="position:static;"><i data-lucide="x" class="nav-icon" aria-hidden="true"></i></button></div>
           <div class="env-drawer__meta" data-comp="eval-meta">
-            <span>候选人：周沐｜产品经理｜复试</span>
+            <span>候选人：周沐｜产品经理｜非管培生｜复试</span>
             <span>面试时间：2026-07-29 10:00-10:45｜面试官：陈越</span>
             <span>提交进度：0/3，提交前不可查看其他面试官面评。</span>
           </div>
           <div class="env-drawer__body">
             <div class="hr-eval-form">
               <div class="form-group" data-comp="eval-score"><label class="form-label">综合结论</label><div class="form-input form-combobox">建议通过<i data-lucide="chevron-down" class="form-chevron" aria-hidden="true"></i></div></div>
-              <div class="form-row-2">
-                <div class="form-group"><label class="form-label">专业能力</label><div class="form-input form-combobox">4 / 5<i data-lucide="chevron-down" class="form-chevron" aria-hidden="true"></i></div></div>
-                <div class="form-group"><label class="form-label">沟通协作</label><div class="form-input form-combobox">5 / 5<i data-lucide="chevron-down" class="form-chevron" aria-hidden="true"></i></div></div>
+              <div class="hr-eval-template-card" data-comp="eval-template-type">
+                <div><span>当前评价模板</span><strong>非管培生（其他社招岗位）</strong></div>
+                <em>根据候选人岗位类型自动带入，评价维度固定，不支持新增或删除。</em>
               </div>
+              <div class="hr-eval-dimension-list" data-comp="eval-fixed-dimensions">
+                <div class="hr-dimension-head"><strong>固定评价维度</strong><span class="badge badge-info">每项满分 10 分</span></div>
+                <div class="hr-score-row"><span>岗位匹配度</span><div class="form-input form-combobox">8 / 10<i data-lucide="chevron-down" class="form-chevron" aria-hidden="true"></i></div></div>
+                <div class="hr-score-row"><span>专业能力</span><div class="form-input form-combobox">9 / 10<i data-lucide="chevron-down" class="form-chevron" aria-hidden="true"></i></div></div>
+                <div class="hr-score-row"><span>管理能力/管理潜力</span><div class="form-input form-combobox">7 / 10<i data-lucide="chevron-down" class="form-chevron" aria-hidden="true"></i></div></div>
+                <div class="hr-score-row"><span>AI落地能力</span><div class="form-input form-combobox">8 / 10<i data-lucide="chevron-down" class="form-chevron" aria-hidden="true"></i></div></div>
+                <div class="hr-score-row"><span>职业素质素养</span><div class="form-input form-combobox">9 / 10<i data-lucide="chevron-down" class="form-chevron" aria-hidden="true"></i></div></div>
+                <div class="hr-score-row"><span>价值观契合</span><div class="form-input form-combobox">9 / 10<i data-lucide="chevron-down" class="form-chevron" aria-hidden="true"></i></div></div>
+              </div>
+              <div class="form-group" data-comp="eval-average-score"><label class="form-label">综合得分</label><div class="form-input hr-score-output"><strong>8.3 / 10</strong><span>自动按 6 项得分平均计算，不支持手动修改。</span></div></div>
               <div class="form-group" data-comp="eval-comment"><label class="form-label">评价内容</label><textarea class="form-textarea">候选人能清楚拆解招聘协同场景，对面试评价独立性和权限边界有较成熟理解。建议终试重点关注跨部门冲突处理案例。</textarea></div>
               <div class="hr-hidden-evals" data-comp="eval-hidden">
                 <strong><i data-lucide="eye-off" class="nav-icon" aria-hidden="true"></i>其他面试官评价暂不可见</strong>
@@ -1947,8 +2473,12 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
             <div class="prd-section__title">面试-02：面试评价抽屉</div>
             <ul>
               <li data-target="eval-drawer"><strong>面评抽屉</strong>：从候选人详情或面试待办打开，右侧抽屉承载当前阶段面试评价表，底层页面进入遮罩态。</li>
-<li data-target="eval-meta"><strong>面试元信息</strong>：展示候选人、岗位、面试轮次、面试时间和当前面试官，避免面试官填写错对象。</li>
+<li data-target="eval-meta"><strong>面试元信息</strong>：展示候选人、岗位、候选人岗位类型、面试轮次、面试时间和当前面试官，避免面试官填写错对象。</li>
 <li data-target="eval-score"><strong>综合结论字段</strong>：展示结论下拉，支持建议通过、待定、建议淘汰等选项。</li>
+<li data-target="eval-template-type"><strong>评价模板类型</strong>：根据候选人岗位类型自动带入固定模板；管培生使用管培生模板，非管培生使用其他社招岗位模板，面试官不可新增、删除或重命名评价维度。</li>
+<li data-target="eval-fixed-dimensions"><strong>固定评价维度</strong>：当前候选人为非管培生（其他社招岗位），固定展示岗位匹配度、专业能力、管理能力/管理潜力、AI落地能力、职业素质素养、价值观契合六项；管培生模板固定展示学习力、判断力、突破力、价值观契合、适应能力五项。</li>
+<li data-target="eval-fixed-dimensions"><strong>评分规则</strong>：每个评价维度满分均为 10 分，支持 0-10 分选择；提交评价时模板内所有固定维度均为必填。</li>
+<li data-target="eval-average-score"><strong>综合得分字段</strong>：展示自动计算的平均值，计算方式为所有已填写维度得分之和除以维度数量，保留 1 位小数，不允许手动修改。</li>
 <li data-target="eval-comment"><strong>评价内容字段</strong>：展示多行文本框，用于填写结构化评价之外的补充说明。</li>
 <li data-target="eval-hidden"><strong>独立评价提示</strong>：当前阶段面评未全部提交前，不展示其他面试官具体评价，仅展示提交进度和规则说明。</li>
 <li data-target="eval-submit"><strong>提交评价按钮</strong>：点击后锁定本人面评内容，刷新提交进度；当所有面试官提交后系统统一公开面评并允许招聘负责人推进阶段。</li>
@@ -2005,7 +2535,6 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
           <div class="win-chrome-actions">
             <button class="win-chrome-btn" title="全局搜索"><i data-lucide="search" class="win-chrome-icon" aria-hidden="true"></i></button>
             <button class="win-chrome-btn" title="通知"><i data-lucide="bell" class="win-chrome-icon" aria-hidden="true"></i></button>
-            <div class="win-credits"><i data-lucide="calendar-clock" class="win-chrome-icon" aria-hidden="true"></i><span>2026 届秋招</span></div>
             <div class="win-avatar-chip"><span class="win-avatar">林</span><span class="badge-free">招聘负责人</span></div>
             <button class="win-chrome-btn" title="菜单"><i data-lucide="menu" class="win-chrome-icon" aria-hidden="true"></i></button>
           </div>
@@ -2025,7 +2554,7 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
 </div>
           </div>
 <div class="hr-offer-summary" data-comp="offer-summary">
-  <div class="hr-offer-step active"><strong>5</strong><span>待定薪</span></div><div class="hr-offer-step "><strong>4</strong><span>待发起口头</span></div><div class="hr-offer-step "><strong>3</strong><span>待接受口头</span></div><div class="hr-offer-step "><strong>2</strong><span>待背调</span></div><div class="hr-offer-step "><strong>4</strong><span>待 OA 审批</span></div><div class="hr-offer-step "><strong>2</strong><span>待发起电子</span></div><div class="hr-offer-step "><strong>1</strong><span>待接受电子</span></div><div class="hr-offer-step "><strong>6</strong><span>待入职</span></div>
+  <div class="hr-offer-step active"><strong>5</strong><span>待定薪</span></div><div class="hr-offer-step "><strong>4</strong><span>待发起口头 Offer</span></div><div class="hr-offer-step "><strong>3</strong><span>待接受口头 Offer</span></div><div class="hr-offer-step "><strong>2</strong><span>待背调</span></div><div class="hr-offer-step "><strong>4</strong><span>待 OA 审批</span></div><div class="hr-offer-step "><strong>2</strong><span>待发起电子 Offer</span></div><div class="hr-offer-step "><strong>1</strong><span>待接受电子 Offer</span></div><div class="hr-offer-step "><strong>6</strong><span>待入职</span></div>
 </div>
 <div class="hr-kanban" data-comp="offer-kanban">
   <div class="hr-kanban-col"><div class="hr-kanban-head">待定薪<span>2</span></div><div class="hr-offer-card warn" data-comp="offer-card"><div class="hr-card-head"><strong>许知予</strong><span class="badge badge-warn">已滞留 3 天</span></div><p>数据分析师 · P6 · 招聘负责人 林诗</p><p>预计入职：2026-08-18</p><p class="hr-salary">薪资：权限控制字段</p><button class="btn btn-primary btn-sm">提交薪资方案</button></div><div class="hr-offer-card " data-comp="offer-card"><div class="hr-card-head"><strong>沈知远</strong><span class="badge badge-info">已滞留 1 天</span></div><p>后端工程师 · P7 · 招聘负责人 林诗</p><p>预计入职：2026-08-18</p><p class="hr-salary">薪资：权限控制字段</p><button class="btn btn-primary btn-sm">提交薪资方案</button></div></div><div class="hr-kanban-col"><div class="hr-kanban-head">待发起口头 Offer<span>2</span></div><div class="hr-offer-card " data-comp="offer-card"><div class="hr-card-head"><strong>周沐</strong><span class="badge badge-info">今日进入</span></div><p>产品经理 · P6 · 招聘负责人 林诗</p><p>预计入职：2026-08-18</p><p class="hr-salary">薪资：权限控制字段</p><button class="btn btn-primary btn-sm">推进下一阶段</button></div><div class="hr-offer-card " data-comp="offer-card"><div class="hr-card-head"><strong>赵晴</strong><span class="badge badge-info">已滞留 2 天</span></div><p>HRBP · P5 · 招聘负责人 林诗</p><p>预计入职：2026-08-18</p><p class="hr-salary">薪资：权限控制字段</p><button class="btn btn-primary btn-sm">推进下一阶段</button></div></div><div class="hr-kanban-col"><div class="hr-kanban-head">待背调<span>1</span></div><div class="hr-offer-card warn" data-comp="offer-card"><div class="hr-card-head"><strong>邵一凡</strong><span class="badge badge-warn">材料待收集</span></div><p>后端工程师 · P7 · 招聘负责人 林诗</p><p>预计入职：2026-08-18</p><p class="hr-salary">薪资：权限控制字段</p><button class="btn btn-primary btn-sm">推进下一阶段</button></div></div><div class="hr-kanban-col"><div class="hr-kanban-head">待 OA 审批<span>2</span></div><div class="hr-offer-card warn" data-comp="offer-card"><div class="hr-card-head"><strong>陈澈</strong><span class="badge badge-warn">钉钉待发起</span></div><p>前端工程师 · P6 · 招聘负责人 林诗</p><p>预计入职：2026-08-18</p><p class="hr-salary">薪资：权限控制字段</p><button class="btn btn-primary btn-sm">推进下一阶段</button></div><div class="hr-offer-card " data-comp="offer-card"><div class="hr-card-head"><strong>林若</strong><span class="badge badge-info">审批中</span></div><p>运营经理 · P5 · 招聘负责人 林诗</p><p>预计入职：2026-08-18</p><p class="hr-salary">薪资：权限控制字段</p><button class="btn btn-primary btn-sm">推进下一阶段</button></div></div><div class="hr-kanban-col"><div class="hr-kanban-head">待发起电子 Offer<span>1</span></div><div class="hr-offer-card " data-comp="offer-card"><div class="hr-card-head"><strong>韩宁</strong><span class="badge badge-info">模板待确认</span></div><p>产品运营 · P5 · 招聘负责人 林诗</p><p>预计入职：2026-08-18</p><p class="hr-salary">薪资：权限控制字段</p><button class="btn btn-primary btn-sm">推进下一阶段</button></div></div>
@@ -2042,7 +2571,7 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
             <div class="prd-section__title">Offer-01：Offer 看板</div>
             <ul>
               <li data-target="offer-filter-batch,offer-filter-job"><strong>Offer 筛选器</strong>：支持招聘批次、岗位、招聘负责人、Offer 状态、候选人关键词和滞留时长筛选。</li>
-<li data-target="offer-summary"><strong>Offer 概览</strong>：展示待定薪、待发起口头 Offer、待接受口头 Offer、待背调、待 OA 审批、待发起电子 Offer、待接受电子 Offer、待入职阶段人数。</li>
+<li data-target="offer-summary"><strong>Offer 概览</strong>：单行展示待定薪、待发起口头 Offer、待接受口头 Offer、待背调、待 OA 审批、待发起电子 Offer、待接受电子 Offer、待入职八个阶段人数；每个阶段卡片内数字在上、阶段名在下，避免大宽度卡片占用过多纵向空间。</li>
 <li data-target="offer-kanban"><strong>Offer 看板</strong>：按阶段列展示候选人卡片，默认阶段为待定薪，默认按进入阶段时间正序排列。</li>
 <li data-target="offer-card"><strong>候选人卡片</strong>：展示姓名、部门、岗位、职级、薪资、预计入职时间、招聘负责人和已滞留天数；薪资字段按权限控制。</li>
 <li data-target="offer-card"><strong>滞留提醒</strong>：候选人在同一阶段滞留 3 个工作日时，卡片展示警示状态并提醒对应招聘负责人。</li>
@@ -2100,7 +2629,6 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
           <div class="win-chrome-actions">
             <button class="win-chrome-btn" title="全局搜索"><i data-lucide="search" class="win-chrome-icon" aria-hidden="true"></i></button>
             <button class="win-chrome-btn" title="通知"><i data-lucide="bell" class="win-chrome-icon" aria-hidden="true"></i></button>
-            <div class="win-credits"><i data-lucide="calendar-clock" class="win-chrome-icon" aria-hidden="true"></i><span>2026 届秋招</span></div>
             <div class="win-avatar-chip"><span class="win-avatar">林</span><span class="badge-free">招聘负责人</span></div>
             <button class="win-chrome-btn" title="菜单"><i data-lucide="menu" class="win-chrome-icon" aria-hidden="true"></i></button>
           </div>
@@ -2120,7 +2648,7 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
 </div>
           </div>
 <div class="hr-offer-summary" data-comp="offer-summary">
-  <div class="hr-offer-step active"><strong>5</strong><span>待定薪</span></div><div class="hr-offer-step "><strong>4</strong><span>待发起口头</span></div><div class="hr-offer-step "><strong>3</strong><span>待接受口头</span></div><div class="hr-offer-step "><strong>2</strong><span>待背调</span></div><div class="hr-offer-step "><strong>4</strong><span>待 OA 审批</span></div><div class="hr-offer-step "><strong>2</strong><span>待发起电子</span></div><div class="hr-offer-step "><strong>1</strong><span>待接受电子</span></div><div class="hr-offer-step "><strong>6</strong><span>待入职</span></div>
+  <div class="hr-offer-step active"><strong>5</strong><span>待定薪</span></div><div class="hr-offer-step "><strong>4</strong><span>待发起口头 Offer</span></div><div class="hr-offer-step "><strong>3</strong><span>待接受口头 Offer</span></div><div class="hr-offer-step "><strong>2</strong><span>待背调</span></div><div class="hr-offer-step "><strong>4</strong><span>待 OA 审批</span></div><div class="hr-offer-step "><strong>2</strong><span>待发起电子 Offer</span></div><div class="hr-offer-step "><strong>1</strong><span>待接受电子 Offer</span></div><div class="hr-offer-step "><strong>6</strong><span>待入职</span></div>
 </div>
 <div class="hr-kanban" data-comp="offer-kanban">
   <div class="hr-kanban-col"><div class="hr-kanban-head">待定薪<span>2</span></div><div class="hr-offer-card warn" data-comp="offer-card"><div class="hr-card-head"><strong>许知予</strong><span class="badge badge-warn">已滞留 3 天</span></div><p>数据分析师 · P6 · 招聘负责人 林诗</p><p>预计入职：2026-08-18</p><p class="hr-salary">薪资：权限控制字段</p><button class="btn btn-primary btn-sm">提交薪资方案</button></div><div class="hr-offer-card " data-comp="offer-card"><div class="hr-card-head"><strong>沈知远</strong><span class="badge badge-info">已滞留 1 天</span></div><p>后端工程师 · P7 · 招聘负责人 林诗</p><p>预计入职：2026-08-18</p><p class="hr-salary">薪资：权限控制字段</p><button class="btn btn-primary btn-sm">提交薪资方案</button></div></div><div class="hr-kanban-col"><div class="hr-kanban-head">待发起口头 Offer<span>2</span></div><div class="hr-offer-card " data-comp="offer-card"><div class="hr-card-head"><strong>周沐</strong><span class="badge badge-info">今日进入</span></div><p>产品经理 · P6 · 招聘负责人 林诗</p><p>预计入职：2026-08-18</p><p class="hr-salary">薪资：权限控制字段</p><button class="btn btn-primary btn-sm">推进下一阶段</button></div><div class="hr-offer-card " data-comp="offer-card"><div class="hr-card-head"><strong>赵晴</strong><span class="badge badge-info">已滞留 2 天</span></div><p>HRBP · P5 · 招聘负责人 林诗</p><p>预计入职：2026-08-18</p><p class="hr-salary">薪资：权限控制字段</p><button class="btn btn-primary btn-sm">推进下一阶段</button></div></div><div class="hr-kanban-col"><div class="hr-kanban-head">待背调<span>1</span></div><div class="hr-offer-card warn" data-comp="offer-card"><div class="hr-card-head"><strong>邵一凡</strong><span class="badge badge-warn">材料待收集</span></div><p>后端工程师 · P7 · 招聘负责人 林诗</p><p>预计入职：2026-08-18</p><p class="hr-salary">薪资：权限控制字段</p><button class="btn btn-primary btn-sm">推进下一阶段</button></div></div><div class="hr-kanban-col"><div class="hr-kanban-head">待 OA 审批<span>2</span></div><div class="hr-offer-card warn" data-comp="offer-card"><div class="hr-card-head"><strong>陈澈</strong><span class="badge badge-warn">钉钉待发起</span></div><p>前端工程师 · P6 · 招聘负责人 林诗</p><p>预计入职：2026-08-18</p><p class="hr-salary">薪资：权限控制字段</p><button class="btn btn-primary btn-sm">推进下一阶段</button></div><div class="hr-offer-card " data-comp="offer-card"><div class="hr-card-head"><strong>林若</strong><span class="badge badge-info">审批中</span></div><p>运营经理 · P5 · 招聘负责人 林诗</p><p>预计入职：2026-08-18</p><p class="hr-salary">薪资：权限控制字段</p><button class="btn btn-primary btn-sm">推进下一阶段</button></div></div><div class="hr-kanban-col"><div class="hr-kanban-head">待发起电子 Offer<span>1</span></div><div class="hr-offer-card " data-comp="offer-card"><div class="hr-card-head"><strong>韩宁</strong><span class="badge badge-info">模板待确认</span></div><p>产品运营 · P5 · 招聘负责人 林诗</p><p>预计入职：2026-08-18</p><p class="hr-salary">薪资：权限控制字段</p><button class="btn btn-primary btn-sm">推进下一阶段</button></div></div>
@@ -2213,7 +2741,6 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
           <div class="win-chrome-actions">
             <button class="win-chrome-btn" title="全局搜索"><i data-lucide="search" class="win-chrome-icon" aria-hidden="true"></i></button>
             <button class="win-chrome-btn" title="通知"><i data-lucide="bell" class="win-chrome-icon" aria-hidden="true"></i></button>
-            <div class="win-credits"><i data-lucide="calendar-clock" class="win-chrome-icon" aria-hidden="true"></i><span>2026 届秋招</span></div>
             <div class="win-avatar-chip"><span class="win-avatar">林</span><span class="badge-free">管理层</span></div>
             <button class="win-chrome-btn" title="菜单"><i data-lucide="menu" class="win-chrome-icon" aria-hidden="true"></i></button>
           </div>
@@ -2227,7 +2754,7 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
               <div class="hr-page-desc">实时查看招聘漏斗、流失原因、效率、成本和渠道质量。</div>
             </div>
             <div class="hr-actions">
-  <button class="hr-select-pill" data-comp="data-filter-batch">招聘批次：2026 届秋招<i data-lucide="chevron-down" class="hr-pill-icon" aria-hidden="true"></i></button>
+  <button class="hr-select-pill" data-comp="data-filter-batch">招聘批次：全部批次<i data-lucide="chevron-down" class="hr-pill-icon" aria-hidden="true"></i></button>
   <button class="hr-select-pill" data-comp="data-filter-job">岗位：全部<i data-lucide="chevron-down" class="hr-pill-icon" aria-hidden="true"></i></button>
   <button class="hr-select-pill" data-comp="data-filter-time">时间：近 30 天<i data-lucide="chevron-down" class="hr-pill-icon" aria-hidden="true"></i></button>
 </div>
@@ -2274,7 +2801,7 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
           <div class="prd-section">
             <div class="prd-section__title">数据-01：数据中心</div>
             <ul>
-              <li data-target="data-filter-batch,data-filter-job,data-filter-time"><strong>数据筛选器</strong>：支持招聘批次、岗位、时间范围、面试官、简历渠道和招聘阶段筛选；所有图表和指标按筛选范围刷新。</li>
+              <li data-target="data-filter-batch,data-filter-job,data-filter-time"><strong>数据筛选器</strong>：支持招聘批次、岗位、时间范围、面试官、简历渠道和招聘阶段筛选；招聘批次允许为空，空值以「全部批次」展示，并按当前账号数据权限汇总所有可见批次。</li>
 <li data-target="data-cycle"><strong>平均招聘周期</strong>：展示总招聘天数除以入职人数，口径为职位需求审批通过到候选人入职的平均天数。</li>
 <li data-target="data-offer-rate"><strong>Offer 转化率</strong>：展示进入 Offer 到接受 Offer 或入职的转化表现，用于识别 Offer 阶段瓶颈。</li>
 <li data-target="data-eval-rate"><strong>评价及时率</strong>：展示面试评价按时提交比例，目标从 50% 提升到 90%。</li>
@@ -2336,7 +2863,6 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
           <div class="win-chrome-actions">
             <button class="win-chrome-btn" title="全局搜索"><i data-lucide="search" class="win-chrome-icon" aria-hidden="true"></i></button>
             <button class="win-chrome-btn" title="通知"><i data-lucide="bell" class="win-chrome-icon" aria-hidden="true"></i></button>
-            <div class="win-credits"><i data-lucide="calendar-clock" class="win-chrome-icon" aria-hidden="true"></i><span>2026 届秋招</span></div>
             <div class="win-avatar-chip"><span class="win-avatar">林</span><span class="badge-free">人力负责人</span></div>
             <button class="win-chrome-btn" title="菜单"><i data-lucide="menu" class="win-chrome-icon" aria-hidden="true"></i></button>
           </div>
@@ -2354,7 +2880,7 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
   <button class="btn btn-primary btn-sm"><i data-lucide="plus" class="nav-icon" aria-hidden="true"></i>新增配置</button>
 </div>
           </div>
-<div class="inline-tabs" data-comp="settings-tabs"><button class="inline-tab active">招聘批次</button><button class="inline-tab">岗位管理</button><button class="inline-tab">标签管理</button><button class="inline-tab">渠道管理</button><button class="inline-tab">权限管理</button><button class="inline-tab">角色管理</button></div>
+<div class="inline-tabs" data-comp="settings-tabs"><button class="inline-tab active">招聘批次</button><button class="inline-tab ">岗位管理</button><button class="inline-tab ">标签管理</button><button class="inline-tab ">渠道管理</button><button class="inline-tab ">权限管理</button><button class="inline-tab ">角色管理</button></div>
 <div class="hr-settings-grid">
   <div class="info-card" data-comp="settings-batch">
     <div class="hr-card-head"><div><div class="section-title">招聘批次</div><div class="section-desc">供首页、候选人、面试、Offer 和数据中心筛选使用。</div></div><button class="btn btn-primary btn-sm">新增批次</button></div>
@@ -2364,7 +2890,10 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
   </table>
   </div>
   <div class="info-card" data-comp="settings-role">
-    <div class="hr-card-head"><div><div class="section-title">角色权限矩阵</div><div class="section-desc">菜单、按钮、数据范围、敏感字段统一配置。</div></div><button class="btn btn-secondary btn-sm">发布权限</button></div>
+    <div class="hr-card-head">
+      <div><div class="section-title">角色权限矩阵</div><div class="section-desc">菜单、按钮、数据范围、敏感字段统一配置。</div></div>
+      <div class="hr-actions"><a class="btn btn-secondary btn-sm" data-comp="settings-calendar-permission-entry" href="#section-settings-calendar-permission"><i data-lucide="lock" class="nav-icon" aria-hidden="true"></i>面试日历权限</a><button class="btn btn-secondary btn-sm">发布权限</button></div>
+    </div>
     <table class="hr-table" data-comp="settings-permission-table">
     <thead><tr><th>角色</th><th>候选人</th><th>薪资</th><th>面评</th><th>流程推进</th><th>数据中心</th></tr></thead>
     <tbody><tr><td>招聘负责人</td><td>本人负责岗位</td><td>部分可见</td><td>可填/可看公开</td><td>允许</td><td>岗位范围</td></tr><tr><td>人力负责人</td><td>全部</td><td>可见/可审</td><td>全部</td><td>允许</td><td>全部</td></tr><tr><td>面试官（业务）</td><td>本人参与</td><td>隐藏</td><td>仅本人填写</td><td>禁止</td><td>不可见</td></tr><tr><td>管理层</td><td>关键候选人</td><td>脱敏</td><td>公开后可看</td><td>禁止</td><td>全部</td></tr></tbody>
@@ -2393,6 +2922,7 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
               <li data-target="settings-tabs"><strong>设置 Tab</strong>：展示招聘批次、岗位管理、标签管理、渠道管理、权限管理、角色管理六类配置入口。</li>
 <li data-target="settings-batch"><strong>招聘批次管理</strong>：支持创建、编辑、停用招聘批次；批次字段包含名称、目标人数、起止时间和状态，并供全系统筛选使用。</li>
 <li data-target="settings-role"><strong>角色权限矩阵</strong>：按招聘负责人、人力负责人、面试官（HR）、面试官（业务）和管理层配置菜单、操作、数据范围和敏感字段权限。</li>
+<li data-target="settings-calendar-permission-entry"><strong>面试日历权限入口</strong>：位于系统设置 / 权限管理 / 角色权限矩阵区域，点击进入「设置-02：面试日历详情权限」配置页，仅人力负责人、系统管理员等具备权限管理权限的角色可见。</li>
 <li data-target="settings-permission-table"><strong>敏感字段权限</strong>：薪资、审批、电话、邮箱等敏感字段必须在 API 层按角色控制，前端隐藏仅作为体验补充。</li>
 <li data-target="settings-job-tag"><strong>岗位/标签/渠道配置</strong>：维护岗位、标签和渠道字典，支撑候选人入库、筛选、人才库检索和渠道分析。</li>
 <li data-target="settings-audit"><strong>操作记录与审计</strong>：展示权限变更、批量导出、Offer 滞留提醒等关键操作；敏感操作需保留操作人、时间、对象、前后状态和备注。</li>
@@ -2403,266 +2933,170 @@ body.proto-note-on .sections-col [data-comp],body.proto-note-on .sections-col [d
     </div>
   </div>
 </div>
+
+<div id="section-settings-calendar-permission" class="proto-stack">
+  <div class="section-label">设置-02</div>
+  <div class="proto-with-prd">
+    
+    <div class="macos-window">
+      <div class="macos-titlebar">
+        <div class="macos-dot red"></div>
+        <div class="macos-dot yellow"></div>
+        <div class="macos-dot green"></div>
+        <div class="macos-title">智汇系统 — 系统设置</div>
+      </div>
+      <div class="macos-body">
+        
+        <div class="app-sidebar" data-comp="app-sidebar">
+          <div class="hr-brand" data-comp="sidebar-brand">
+            <div class="hr-brand-mark">智</div>
+            <div>
+              <div class="hr-brand-name">智汇系统</div>
+              <div class="hr-brand-sub">HR Management Suite</div>
+            </div>
+          </div>
+          <div class="sidebar-section-header">招聘工作台</div>
+          <div class="sidebar-apps">
+            
+            <div class="sidebar-item " data-comp="nav-dashboard"><i data-lucide="layout-dashboard" class="nav-icon" aria-hidden="true"></i><span>首页</span></div>
+            <div class="sidebar-item " data-comp="nav-talent"><i data-lucide="users" class="nav-icon" aria-hidden="true"></i><span>人才库</span><span class="si-badge">128</span></div>
+            <div class="sidebar-item " data-comp="nav-interview"><i data-lucide="calendar-days" class="nav-icon" aria-hidden="true"></i><span>面试管理</span><span class="si-badge">9</span></div>
+            <div class="sidebar-item " data-comp="nav-offer"><i data-lucide="badge-dollar-sign" class="nav-icon" aria-hidden="true"></i><span>Offer 管理</span><span class="si-badge">6</span></div>
+            <div class="sidebar-item " data-comp="nav-data"><i data-lucide="bar-chart-3" class="nav-icon" aria-hidden="true"></i><span>数据中心</span></div>
+            <div class="sidebar-item active" data-comp="nav-settings"><i data-lucide="settings" class="nav-icon" aria-hidden="true"></i><span>系统设置</span></div>
+          </div>
+          <div class="sidebar-divider"></div>
+          <div class="sidebar-section-header">快捷入口</div>
+          <div class="sidebar-item" data-comp="nav-shortcut-upload"><i data-lucide="upload" class="nav-icon" aria-hidden="true"></i>上传简历</div>
+          <div class="sidebar-item" data-comp="nav-shortcut-todo"><i data-lucide="list-checks" class="nav-icon" aria-hidden="true"></i>我的待办<span class="si-badge">18</span></div>
+          <div class="sidebar-item" data-comp="nav-shortcut-risk"><i data-lucide="triangle-alert" class="nav-icon" aria-hidden="true"></i>滞留提醒<span class="si-badge">4</span></div>
+        </div>
+        
+        <div class="win-chrome-bar" data-comp="topbar">
+          <div class="win-chrome-drag">
+            <div class="hr-topbar-title">系统设置</div>
+          </div>
+          <div class="win-chrome-actions">
+            <button class="win-chrome-btn" title="全局搜索"><i data-lucide="search" class="win-chrome-icon" aria-hidden="true"></i></button>
+            <button class="win-chrome-btn" title="通知"><i data-lucide="bell" class="win-chrome-icon" aria-hidden="true"></i></button>
+            <div class="win-avatar-chip"><span class="win-avatar">林</span><span class="badge-free">人力负责人</span></div>
+            <button class="win-chrome-btn" title="菜单"><i data-lucide="menu" class="win-chrome-icon" aria-hidden="true"></i></button>
+          </div>
+        </div>
+        <div class="app-main">
+          
+
+          <div class="hr-page-head" data-comp="page-head">
+            <div>
+              <div class="hr-page-title">系统设置</div>
+              <div class="hr-page-desc">维护招聘批次、岗位、标签、渠道、角色权限和敏感字段规则。</div>
+            </div>
+            <div class="hr-actions">
+  <button class="btn btn-secondary btn-sm" data-comp="calendar-perm-log"><i data-lucide="history" class="nav-icon" aria-hidden="true"></i>操作日志</button>
+  <button class="btn btn-primary btn-sm" data-comp="calendar-perm-save"><i data-lucide="save" class="nav-icon" aria-hidden="true"></i>保存配置</button>
+</div>
+          </div>
+<div class="inline-tabs" data-comp="calendar-perm-settings-tabs"><button class="inline-tab ">招聘批次</button><button class="inline-tab ">岗位管理</button><button class="inline-tab ">标签管理</button><button class="inline-tab ">渠道管理</button><button class="inline-tab active">权限管理</button><button class="inline-tab ">角色管理</button></div>
+<div class="hr-perm-context" data-comp="calendar-perm-subhead">
+  <div>
+    <div class="hr-breadcrumb">系统设置 / 权限管理</div>
+    <div class="section-title">面试日历详情权限</div>
+    <div class="section-desc">配置不同角色在面试日历中可查看的日程详情、候选人入口和字段隐藏规则。</div>
   </div>
+  <span class="badge badge-success">规则已启用</span>
 </div>
-<div class="proto-edit-toolbar" data-proto-editor>
-  <button class="proto-edit-btn" type="button" data-action="toggle-edit" title="开启或关闭文案编辑"><i data-lucide="pencil" class="proto-edit-icon" aria-hidden="true"></i><span>编辑</span></button>
-  <button class="proto-edit-btn" type="button" data-action="toggle-note" title="在界面上添加调整标注"><i data-lucide="message-square-plus" class="proto-edit-icon" aria-hidden="true"></i><span>标注</span></button>
-  <button class="proto-edit-btn" type="button" data-action="export-edits" title="查看并下载修改清单"><i data-lucide="download" class="proto-edit-icon" aria-hidden="true"></i><span>导出</span></button>
-</div>
-<div class="proto-edit-status" data-proto-editor-status></div>
-<div class="proto-export-modal" data-proto-editor data-export-modal hidden>
-  <div class="proto-export-card">
-    <div class="proto-export-head">
-      <div class="proto-export-title">原型修改清单</div>
-      <div class="proto-export-actions">
-        <button class="proto-edit-btn" type="button" data-action="download-export"><i data-lucide="file-down" class="proto-edit-icon" aria-hidden="true"></i><span>下载 JSON</span></button>
-        <button class="proto-edit-btn" type="button" data-action="close-export"><i data-lucide="x" class="proto-edit-icon" aria-hidden="true"></i><span>关闭</span></button>
+<div class="hr-permission-grid">
+  <div class="info-card" data-comp="calendar-perm-scope">
+    <div class="section-title">生效范围</div>
+    <div class="section-desc">规则发布后立即作用于面试日历的月、周、日视图和详情接口。</div>
+    <div class="hr-setting-lines">
+      <div><span>适用模块</span><strong>面试管理 / 面试日历</strong></div>
+      <div><span>招聘批次</span><strong>全部批次</strong></div>
+      <div><span>默认策略</span><strong>隐藏非授权详情</strong></div>
+      <div><span>冲突检测</span><strong>保留忙闲占用参与计算</strong></div>
+    </div>
+  </div>
+  <div class="info-card" data-comp="calendar-perm-policy">
+    <div class="section-title">权限策略</div>
+    <div class="section-desc">普通用户在日历页只能看到当前生效状态，不能自行切换。</div>
+    <div class="hr-rule-summary">
+      <span><b>本人创建</b><em>展示候选人、岗位、面试官、详情入口</em></span>
+      <span><b>本人参与</b><em>展示参与日程详情，可填写本人面评</em></span>
+      <span><b>非授权日程</b><em>仅展示忙闲占用，不可点击</em></span>
+    </div>
+  </div>
+  <div class="info-card hr-permission-wide" data-comp="calendar-perm-role-matrix">
+    <div class="hr-card-head"><div><div class="section-title">角色权限配置</div><div class="section-desc">按角色定义可见范围、非授权展示方式和配置权限。</div></div><span class="badge badge-success">已启用</span></div>
+    <table class="hr-table" data-comp="calendar-perm-role-table">
+    <thead><tr><th>角色</th><th>授权详情范围</th><th>非授权日程展示</th><th>候选人详情入口</th><th>配置权限</th></tr></thead>
+    <tbody><tr><td>招聘负责人</td><td>本人创建、本人负责岗位</td><td>忙闲占用</td><td>授权日程可进入</td><td>不可配置</td></tr><tr><td>人力负责人</td><td>全部日程详情</td><td>全部详情可见</td><td>全部可进入</td><td>可配置</td></tr><tr><td>面试官（HR）</td><td>本人参与、本人创建</td><td>忙闲占用</td><td>授权日程可进入</td><td>不可配置</td></tr><tr><td>面试官（业务）</td><td>本人参与</td><td>忙闲占用</td><td>授权日程可进入</td><td>不可配置</td></tr><tr><td>管理层</td><td>全部日程详情</td><td>全部详情可见</td><td>可查看脱敏详情</td><td>不可配置</td></tr></tbody>
+  </table>
+  </div>
+  <div class="info-card" data-comp="calendar-perm-field-rules">
+    <div class="section-title">字段隐藏规则</div>
+    <div class="section-desc">非授权日程必须由接口返回脱敏结果，前端不接收原始敏感字段。</div>
+    <table class="hr-table" data-comp="calendar-perm-field-table">
+    <thead><tr><th>字段</th><th>授权可见</th><th>非授权展示</th><th>控制口径</th></tr></thead>
+    <tbody><tr><td>候选人姓名</td><td>显示真实姓名</td><td>详情已隐藏</td><td>接口不返回姓名</td></tr><tr><td>应聘岗位</td><td>显示岗位名称</td><td>忙闲占用</td><td>接口不返回岗位</td></tr><tr><td>面试官</td><td>显示参与人</td><td>不展示</td><td>接口不返回参与人</td></tr><tr><td>候选人详情入口</td><td>可点击进入</td><td>禁用且不可点击</td><td>路由鉴权拦截</td></tr></tbody>
+  </table>
+  </div>
+  <div class="info-card" data-comp="calendar-perm-preview">
+    <div class="section-title">生效预览</div>
+    <div class="section-desc">管理员可切换角色预览日历卡片在不同权限下的展示差异。</div>
+    <div class="hr-preview-grid">
+      <div class="hr-preview-card">
+        <span class="badge badge-success">授权可见</span>
+        <strong>10:00 数据分析师 许知予</strong>
+        <em>终试 · 林诗 / 管理层</em>
+        <button class="btn btn-secondary btn-sm">进入候选人详情</button>
+      </div>
+      <div class="hr-preview-card private">
+        <span class="badge badge-default">非授权</span>
+        <strong>11:00 忙闲占用</strong>
+        <em>详情已隐藏 · 不展示候选人和面试官</em>
+        <button class="btn btn-secondary btn-sm" disabled>不可进入</button>
       </div>
     </div>
-    <textarea class="proto-export-text" data-export-text readonly></textarea>
+  </div>
+  <div class="info-card hr-permission-wide" data-comp="calendar-perm-audit">
+    <div class="hr-card-head"><div><div class="section-title">发布校验与审计</div><div class="section-desc">保存前校验角色覆盖、字段返回和候选人详情路由鉴权。</div></div><button class="btn btn-secondary btn-sm"><i data-lucide="clipboard-check" class="nav-icon" aria-hidden="true"></i>校验规则</button></div>
+    <div class="hr-history"><span>07-30 09:42 林诗 开启「隐藏非授权详情」，影响角色：招聘负责人、面试官（HR）、面试官（业务）</span><span>07-30 09:41 系统 校验通过：非授权接口不返回候选人姓名、岗位、面试官字段</span><span>07-29 16:18 王可 修改管理层候选人详情入口为脱敏查看</span></div>
+  </div>
+</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="prd-panel-wrap">
+      <aside class="prd-panel">
+        <div class="prd-panel__title">功能概览</div>
+        <div class="prd-panel__body">
+          <div class="prd-section">
+            <div class="prd-section__title">设置-02：面试日历详情权限</div>
+            <ul>
+              <li data-target="calendar-perm-settings-tabs"><strong>系统设置 Tab</strong>：与设置-01 保持完全一致，展示招聘批次、岗位管理、标签管理、渠道管理、权限管理、角色管理六类配置入口；本页高亮「权限管理」。</li>
+<li data-target="calendar-perm-subhead"><strong>权限配置标题</strong>：展示当前位置「系统设置 / 权限管理」和配置项名称「面试日历详情权限」，说明该页是权限管理下的细分配置，不新增一套顶层 Tab。</li>
+<li data-target="calendar-perm-scope"><strong>生效范围</strong>：明确规则适用于面试管理 / 面试日历模块，覆盖月视图、周视图、日视图、日程详情接口、候选人详情跳转和冲突检测；招聘批次默认全部批次。</li>
+<li data-target="calendar-perm-policy"><strong>核心策略</strong>：本人创建和本人参与的日程展示完整详情；非本人创建且本人未参与的日程只展示忙闲占用，不展示候选人、岗位、面试官和详情入口；普通用户只能查看生效状态，不能在日历页修改。</li>
+<li data-target="calendar-perm-role-table"><strong>角色权限表</strong>：按招聘负责人、人力负责人、面试官（HR）、面试官（业务）、管理层配置授权详情范围、非授权展示方式、候选人详情入口和是否具备配置权限。</li>
+<li data-target="calendar-perm-field-table"><strong>字段隐藏规则</strong>：候选人姓名、应聘岗位、面试官、候选人详情入口按授权状态返回；非授权时接口不返回原始字段，前端仅渲染脱敏后的忙闲占用状态。</li>
+<li data-target="calendar-perm-preview"><strong>生效预览</strong>：管理员可选择角色预览授权日程与非授权日程的卡片差异，校验文案、禁用态、跳转入口和忙闲占用展示是否符合预期。</li>
+<li data-target="calendar-perm-audit"><strong>发布校验与审计</strong>：保存前校验角色覆盖、字段返回、候选人详情路由鉴权和操作日志记录；权限变更必须记录操作人、时间、变更前后值和影响范围。</li>
+<li data-target="calendar-perm-save"><strong>保存配置</strong>：仅具备权限管理权限的角色可点击；保存后立即刷新当前账号权限缓存，并通知面试日历重新拉取权限策略。</li>
+<li data-target="calendar-perm-log"><strong>操作日志</strong>：点击后查看面试日历详情权限的历史变更，包括策略开关、角色授权、字段隐藏和发布校验结果。</li>
+            </ul>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
   </div>
 </div>
 <script>
   if (window.lucide) window.lucide.createIcons();
   (function() {
-    var TEXT_KEY = "zhihui-prototype-text-edits-v1";
-    var NOTE_KEY = "zhihui-prototype-notes-v1";
-    var root = document.querySelector(".sections-col");
-    if (!root) return;
-    var editButton = document.querySelector('[data-action="toggle-edit"]');
-    var noteButton = document.querySelector('[data-action="toggle-note"]');
-    var exportButton = document.querySelector('[data-action="export-edits"]');
-    var closeExportButton = document.querySelector('[data-action="close-export"]');
-    var downloadExportButton = document.querySelector('[data-action="download-export"]');
-    var statusBox = document.querySelector("[data-proto-editor-status]");
-    var modal = document.querySelector("[data-export-modal]");
-    var exportText = document.querySelector("[data-export-text]");
-    var textEdits = load(TEXT_KEY, {});
-    var notes = load(NOTE_KEY, []);
-    var editMode = false;
-    var noteMode = false;
-    var statusTimer = null;
-
-    function load(key, fallback) {
-      try {
-        var raw = window.localStorage.getItem(key);
-        return raw ? JSON.parse(raw) : fallback;
-      } catch (error) {
-        return fallback;
-      }
-    }
-
-    function save(key, value) {
-      window.localStorage.setItem(key, JSON.stringify(value));
-    }
-
-    function sectionName(el) {
-      var section = el.closest(".proto-stack");
-      if (!section) return "";
-      var title = section.querySelector(".macos-title");
-      return title ? title.textContent.trim() : section.id;
-    }
-
-    function componentName(el) {
-      var comp = el.closest("[data-comp]");
-      return comp ? comp.getAttribute("data-comp") : "";
-    }
-
-    function showStatus(text) {
-      if (!statusBox) return;
-      statusBox.textContent = text;
-      statusBox.classList.add("is-visible");
-      clearTimeout(statusTimer);
-      statusTimer = setTimeout(function() {
-        statusBox.classList.remove("is-visible");
-      }, 2600);
-    }
-
-    function shouldSkipText(node) {
-      if (!node.nodeValue || !node.nodeValue.trim()) return true;
-      var parent = node.parentElement;
-      if (!parent) return true;
-      if (parent.closest("[data-proto-editor]")) return true;
-      if (parent.closest("script,style,svg,textarea,input,select")) return true;
-      if (parent.closest("[data-edit-text]")) return true;
-      return false;
-    }
-
-    function prepareEditableText() {
-      var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-        acceptNode: function(node) {
-          return shouldSkipText(node) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
-        }
-      });
-      var nodes = [];
-      while (walker.nextNode()) nodes.push(walker.currentNode);
-      nodes.forEach(function(node, index) {
-        var span = document.createElement("span");
-        var id = "txt-" + String(index + 1).padStart(4, "0");
-        span.setAttribute("data-edit-text", "");
-        span.setAttribute("data-edit-id", id);
-        span.setAttribute("data-original", node.nodeValue);
-        span.textContent = textEdits[id] && textEdits[id].newText ? textEdits[id].newText : node.nodeValue;
-        node.parentNode.replaceChild(span, node);
-      });
-    }
-
-    function setEditMode(on) {
-      editMode = on;
-      if (editMode) noteMode = false;
-      document.body.classList.toggle("proto-edit-on", editMode);
-      document.body.classList.toggle("proto-note-on", noteMode);
-      if (editButton) editButton.classList.toggle("is-active", editMode);
-      if (noteButton) noteButton.classList.toggle("is-active", noteMode);
-      document.querySelectorAll("[data-edit-text]").forEach(function(el) {
-        if (editMode) {
-          el.setAttribute("contenteditable", "true");
-          el.setAttribute("spellcheck", "false");
-        } else {
-          el.removeAttribute("contenteditable");
-          el.removeAttribute("spellcheck");
-        }
-      });
-      showStatus(editMode ? "编辑模式已开启：直接点击界面或右侧 PRD 文字修改，修改会自动保存在本浏览器。" : "编辑模式已关闭。");
-    }
-
-    function setNoteMode(on) {
-      noteMode = on;
-      if (noteMode) editMode = false;
-      document.body.classList.toggle("proto-note-on", noteMode);
-      document.body.classList.toggle("proto-edit-on", editMode);
-      if (noteButton) noteButton.classList.toggle("is-active", noteMode);
-      if (editButton) editButton.classList.toggle("is-active", editMode);
-      document.querySelectorAll("[data-edit-text]").forEach(function(el) {
-        el.removeAttribute("contenteditable");
-        el.removeAttribute("spellcheck");
-      });
-      showStatus(noteMode ? "标注模式已开启：点击界面区域后写下需要调整的细节。" : "标注模式已关闭。");
-    }
-
-    function handleInput(event) {
-      var target = event.target.closest("[data-edit-text]");
-      if (!target) return;
-      var id = target.getAttribute("data-edit-id");
-      var original = target.getAttribute("data-original");
-      var current = target.textContent;
-      if (current === original) {
-        delete textEdits[id];
-      } else {
-        textEdits[id] = {
-          id: id,
-          section: sectionName(target),
-          component: componentName(target),
-          oldText: original,
-          newText: current
-        };
-      }
-      save(TEXT_KEY, textEdits);
-    }
-
-    function handlePaste(event) {
-      if (!editMode || !event.target.closest("[data-edit-text]")) return;
-      event.preventDefault();
-      var text = (event.clipboardData || window.clipboardData).getData("text/plain");
-      document.execCommand("insertText", false, text);
-    }
-
-    function handleNoteClick(event) {
-      if (!noteMode) return;
-      if (!root.contains(event.target) || event.target.closest("[data-proto-editor]") || event.target.closest(".proto-note-pin")) return;
-      event.preventDefault();
-      event.stopPropagation();
-      var target = event.target.closest("[data-comp]") || event.target.closest("[data-edit-text]") || event.target;
-      var noteText = window.prompt("写下这个位置需要调整的细节：");
-      if (!noteText || !noteText.trim()) return;
-      var note = {
-        id: "note-" + Date.now(),
-        section: sectionName(target),
-        component: componentName(target),
-        targetText: (target.innerText || target.textContent || "").trim().slice(0, 120),
-        note: noteText.trim(),
-        pageX: event.pageX,
-        pageY: event.pageY
-      };
-      notes.push(note);
-      save(NOTE_KEY, notes);
-      renderNotes();
-      showStatus("已添加 1 条标注。");
-    }
-
-    function renderNotes() {
-      document.querySelectorAll(".proto-note-pin").forEach(function(pin) { pin.remove(); });
-      notes.forEach(function(note, index) {
-        var pin = document.createElement("button");
-        pin.type = "button";
-        pin.className = "proto-note-pin";
-        pin.textContent = String(index + 1);
-        pin.title = note.note;
-        pin.style.left = Math.max(8, note.pageX - 11) + "px";
-        pin.style.top = Math.max(8, note.pageY - 11) + "px";
-        pin.addEventListener("click", function(event) {
-          event.preventDefault();
-          event.stopPropagation();
-          var next = window.prompt("编辑标注内容，留空则删除：", note.note);
-          if (next === null) return;
-          if (next.trim()) {
-            note.note = next.trim();
-          } else {
-            notes = notes.filter(function(item) { return item.id !== note.id; });
-          }
-          save(NOTE_KEY, notes);
-          renderNotes();
-        });
-        document.body.appendChild(pin);
-      });
-    }
-
-    function exportPayload() {
-      var textChanges = Object.keys(textEdits).sort().map(function(id) { return textEdits[id]; });
-      return {
-        prototype: "智汇系统 招聘管理系统高保真原型",
-        exportedAt: new Date().toISOString(),
-        textChangeCount: textChanges.length,
-        noteCount: notes.length,
-        textChanges: textChanges,
-        annotations: notes
-      };
-    }
-
-    function openExport() {
-      if (!modal || !exportText) return;
-      exportText.value = JSON.stringify(exportPayload(), null, 2);
-      modal.hidden = false;
-      showStatus("修改清单已生成。");
-    }
-
-    function downloadExport() {
-      var payload = JSON.stringify(exportPayload(), null, 2);
-      var blob = new Blob([payload], { type: "application/json;charset=utf-8" });
-      var url = URL.createObjectURL(blob);
-      var link = document.createElement("a");
-      link.href = url;
-      link.download = "zhihui-prototype-edits.json";
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
-    }
-
-    prepareEditableText();
-    renderNotes();
-    root.addEventListener("input", handleInput);
-    root.addEventListener("paste", handlePaste);
-    root.addEventListener("click", handleNoteClick, true);
-    if (editButton) editButton.addEventListener("click", function() { setEditMode(!editMode); });
-    if (noteButton) noteButton.addEventListener("click", function() { setNoteMode(!noteMode); });
-    if (exportButton) exportButton.addEventListener("click", openExport);
-    if (closeExportButton) closeExportButton.addEventListener("click", function() { if (modal) modal.hidden = true; });
-    if (downloadExportButton) downloadExportButton.addEventListener("click", downloadExport);
-  })();
-  (function() {
-    var sectionMap = { 'section-dashboard': '首页-01', 'section-candidate-list': '人才库-01', 'section-candidate-detail': '人才库-02', 'section-resume-upload': '人才库-03', 'section-interview-calendar': '面试-01', 'section-interview-eval': '面试-02', 'section-offer-board': 'Offer-01', 'section-offer-salary': 'Offer-02', 'section-data-center': '数据-01', 'section-settings': '设置-01' };
+    var sectionMap = { 'section-dashboard': '首页-01', 'section-candidate-list': '人才库-01', 'section-candidate-detail': '人才库-02', 'section-resume-upload': '人才库-03', 'section-interview-calendar': '面试-01', 'section-interview-eval': '面试-02', 'section-offer-board': 'Offer-01', 'section-offer-salary': 'Offer-02', 'section-data-center': '数据-01', 'section-settings': '设置-01', 'section-settings-calendar-permission': '设置-02' };
     var tocItems = document.querySelectorAll('.toc-item');
     var ticking = false;
     window.addEventListener('scroll', function() {
