@@ -1592,7 +1592,7 @@ body{justify-content:flex-start;justify-content:safe center}
 .v5-formgrid .form-label{margin-bottom:5px}
 .v5-create-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(290px,.8fr);gap:26px;align-items:start}
 .v5-create-layout--single{grid-template-columns:minmax(0,1fr);max-width:900px}
-#training-create-form{max-width:none}
+#training-create-form,#course-create-form{max-width:none}
 #culture-learning-create .v5-form-band{padding-top:10px;padding-bottom:14px}
 #culture-learning-create .v5-form-band:first-child{padding-top:0}
 .v5-modal-backdrop{position:absolute;inset:0;z-index:30;background:rgba(21,25,45,.36);display:grid;place-items:center;padding:24px}
@@ -1720,6 +1720,21 @@ body{justify-content:flex-start;justify-content:safe center}
 #knowledge-access .v5-access-modal .v5-check-row label{min-width:95px}
 #knowledge-access .v5-access-modal .v5-access-error{color:var(--destructive);font-size:12px;min-height:18px;margin:8px 0 0}
 #knowledge-access .v5-access-modal .v5-create-actions{margin-top:12px}
+.v5-survey-form{border-top:1px solid var(--border);margin-top:12px;padding-top:12px}
+.v5-survey-form .v5-formgrid{align-items:end}
+.v5-survey-form textarea{min-height:64px}
+.v5-survey-questions{display:grid;gap:10px}
+.v5-survey-question{display:grid;grid-template-columns:minmax(0,1fr) 32px;gap:8px;align-items:end}
+.v5-survey-question .form-input{width:100%;box-sizing:border-box}
+.v5-survey-question .form-label{display:block;margin-bottom:5px}
+.v5-survey-question .v5-icon-btn{margin-bottom:2px}
+.v5-survey-add{margin-top:10px}
+.v5-survey-results{margin-top:8px;border-top:1px solid var(--border)}
+.v5-survey-results .v5-row:last-child{border-bottom:0}
+.v5-plan-status{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.v5-plan-week{display:grid;grid-template-columns:110px 1fr 140px 130px;gap:12px;align-items:center;border-bottom:1px solid var(--border);padding:12px 0}
+.v5-plan-week:last-child{border-bottom:0}
+@media(max-width:850px){.v5-plan-week{grid-template-columns:1fr 1fr}}
 @media(max-width:850px){.v5-head{flex-wrap:wrap}.v5-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.v5-split,.v5-cols,.v5-editor,.v5-create-layout{grid-template-columns:1fr}.v5-cards{grid-template-columns:1fr}.v5-kb{grid-template-columns:1fr}.v5-tree{border-right:0;border-bottom:1px solid var(--border)}}
 </style>
 </head>
@@ -1743,7 +1758,10 @@ body{justify-content:flex-start;justify-content:safe center}
 <a class="toc-item toc-item-child" href="#culture-care-plan"><span class="toc-dot"></span>04-计划详情</a>
 <a class="toc-item toc-item-child" href="#culture-care-record"><span class="toc-dot"></span>04-关怀记录详情</a>
 <a class="toc-item" href="#culture-learning"><span class="toc-dot"></span>05 学习发展</a>
-<a class="toc-item toc-item-child" href="#culture-learning-create"><span class="toc-dot"></span>05-配置培训计划 / 课程</a>
+<a class="toc-item toc-item-child" href="#culture-development"><span class="toc-dot"></span>05-发展计划详情与跟进</a>
+<a class="toc-item toc-item-child" href="#culture-learning-create"><span class="toc-dot"></span>05-新建培训计划</a>
+<a class="toc-item toc-item-child" href="#culture-training-detail"><span class="toc-dot"></span>05-培训计划详情</a>
+<a class="toc-item toc-item-child" href="#culture-course-create"><span class="toc-dot"></span>05-新建课程</a>
 <a class="toc-item toc-item-child" href="#culture-learning-course"><span class="toc-dot"></span>05-课程签到与评价</a>
 <a class="toc-item" href="#knowledge-management"><span class="toc-dot"></span>06 知识库管理</a>
 <a class="toc-item toc-item-child" href="#knowledge-editor"><span class="toc-dot"></span>06-内容编辑与版本</a>
@@ -1753,6 +1771,7 @@ body{justify-content:flex-start;justify-content:safe center}
 <a class="toc-item toc-item-child" href="#employee-event-detail"><span class="toc-dot"></span>E01-活动详情与报名</a>
 <a class="toc-item" href="#employee-care"><span class="toc-dot"></span>E02 员工关怀</a>
 <a class="toc-item toc-item-child" href="#employee-care-detail"><span class="toc-dot"></span>E02-关怀消息详情</a>
+<a class="toc-item" href="#employee-development"><span class="toc-dot"></span>E02A 我的发展</a>
 <a class="toc-item" href="#employee-training"><span class="toc-dot"></span>E02A 我的培训</a>
 <a class="toc-item" href="#employee-learning"><span class="toc-dot"></span>E02B 我的课程</a>
 <a class="toc-item toc-item-child" href="#employee-learning-detail"><span class="toc-dot"></span>E02B-课程详情与报名</a>
@@ -1823,7 +1842,11 @@ body{justify-content:flex-start;justify-content:safe center}
               <section class="v5-form-band" data-comp="activity-audience"><h2>适用范围与通知</h2><div class="v5-formgrid">
                 <div class="form-group"><label class="form-label">适用地区 *</label><div class="v5-check-row"><label><input type="checkbox" name="region" value="上海" checked> 上海</label><label><input type="checkbox" name="region" value="新加坡" checked> 新加坡</label></div></div>
                 <div class="form-group"><label class="form-label" for="activity-audience">员工群体 *</label><select class="form-input" id="activity-audience" name="audience" required><option>适用地区全员</option><option>新员工</option><option>直属经理</option></select></div>
-                <div class="form-group v5-wide"><label class="v5-check-row"><input type="checkbox" name="notify" checked> 发布后通知适用员工，并开放报名</label></div>
+                <div class="form-group v5-wide"><label class="form-label">参与方式</label><div class="v5-type-switch" role="radiogroup" aria-label="活动参与方式"><label><input type="radio" name="participation" value="voluntary" checked> 自愿报名</label><label><input type="radio" name="participation" value="mandatory"> 强制参加</label></div><div class="form-tip" id="activity-participation-help">自愿报名：员工在 IM 端确认报名。</div></div>
+                <div class="form-group"><label class="form-label" for="activity-survey-template">活动后满意度模板</label><select class="form-input" id="activity-survey-template" name="surveyTemplate"><option value="standard5">5 分满意度与建议</option><option value="custom">新增自定义模板</option><option value="none">不收集</option></select></div>
+                <div class="form-group"><label class="v5-check-row"><input type="checkbox" name="notify" checked> 发布后通知适用员工</label></div>
+                <div class="form-group" data-survey-custom hidden><label class="form-label" for="activity-survey-name">模板名称 *</label><input class="form-input" id="activity-survey-name" name="surveyName" maxlength="40" placeholder="例如：跨地区活动满意度" disabled required></div>
+                <div class="form-group v5-wide" data-survey-custom hidden><label class="form-label">评分内容（每项 5 分）*</label><div class="v5-survey-questions" id="activity-survey-questions"></div><button type="button" class="btn btn-secondary btn-sm v5-survey-add" id="activity-survey-add" disabled><i data-lucide="plus"></i> 添加评分项</button><div class="form-tip">每项独立评分，最多 10 项；员工提交后计算各项及整体均分。</div></div>
               </div></section>
               <div class="v5-create-actions" data-comp="activity-actions"><p class="v5-form-error" id="activity-form-error" role="status"></p><button type="button" class="btn btn-ghost btn-sm" data-go="culture-events">取消</button><button type="submit" class="btn btn-primary btn-sm">发布活动</button></div>
             </div>
@@ -1834,8 +1857,9 @@ body{justify-content:flex-start;justify-content:safe center}
     <div class="prd-panel-wrap"><aside class="prd-panel"><div class="prd-panel__title">功能概览</div><div class="prd-panel__body"><div class="prd-section"><div class="prd-section__title">V5.0-03-发起活动</div><ul>
       <li data-target="activity-create-head"><strong>返回活动列表</strong>：展示右侧次按钮，返回「文化活动」页面。</li>
       <li data-target="activity-basic"><strong>名称/类型</strong>：名称必填且最多 50 字，作为员工端和管理端标题；类型单选包含文化交流、节日活动、读书分享、志愿服务、健康主题、其他，供分类统计，不决定报名状态。</li><li data-target="activity-basic"><strong>说明/负责人/地点</strong>：说明为员工端可见的活动内容；负责人在文化运营组及授权 HRBP 中选择；地点可填写线下地址或线上会议链接，均为必填。</li>
-      <li data-target="activity-schedule"><strong>时间字段</strong>：开始和结束使用活动所在地时间，结束必须晚于开始；报名截止不得晚于开始，跨地区员工在查看详情时按所在地呈现。</li><li data-target="activity-schedule"><strong>报名上限</strong>：正整数；发布后有效报名从 0 累计，编辑时上限不能小于已报名人数，已终止/已结束不再增加报名。</li>
-      <li data-target="activity-audience"><strong>适用范围</strong>：至少选择一个授权地区；员工群体为适用地区全员、新员工或直属经理，员工端只显示自身地区及群体适用的活动。</li><li data-target="activity-audience"><strong>发布通知</strong>：勾选后发布即通知适用员工并开放报名，状态进入进行中；不勾选则发布为未开始，不发送报名通知，后续开放由运营处理；编辑不重复群发。</li>
+      <li data-target="activity-schedule"><strong>时间字段</strong>：开始和结束使用活动所在地时间，结束必须晚于开始；报名截止不得晚于开始，跨地区员工在查看详情时按所在地呈现。</li><li data-target="activity-schedule"><strong>报名上限</strong>：正整数；自愿报名从 0 累计，强制参加发布时按匹配员工生成名单且上限不得低于人数；编辑时上限不能小于已报名人数，已终止/已结束不再增加报名。</li>
+      <li data-target="activity-audience"><strong>适用范围</strong>：至少选择一个授权地区；员工群体为适用地区全员、新员工或直属经理，员工端只显示自身地区及群体适用的活动。</li><li data-target="activity-audience"><strong>参与方式</strong>：自愿报名由员工在 IM 确认，未通知时暂不开放；强制参加在发布时按适用地区与群体自动生成员工报名记录，并强制发送通知，员工端显示「系统已报名」且不可重复报名。编辑后不自动取消历史记录，变更适用范围需单独复核。</li><li data-target="activity-audience"><strong>满意度模板</strong>：可选单项标准模板、新增多项自定义 5 分制模板或不收集；活动结束且员工已签到后，员工 IM 详情显示一次性填写入口。编辑未结束活动可修改模板，已结束活动及历史答卷不变。</li>
+      <li data-target="activity-audience"><strong>自定义评分项</strong>：模板名必填；配置 1 至 10 个独立的评分内容，每项问题必填且最多 80 字，支持添加与删除但至少保留一项。员工对所有评分项逐项打分后提交，管理端展示每项均分、整体均分和提交人数。</li>
       <li data-target="activity-actions"><strong>保存与发布</strong>：发布成功后进入活动列表展示新活动；编辑时保存并保留原活动编号和报名记录，取消返回列表。</li>
     </ul></div></div></aside></div>
   </div>
@@ -1845,7 +1869,7 @@ body{justify-content:flex-start;justify-content:safe center}
 <div id="culture-event-detail" class="proto-stack"><div class="section-label">V5.0-03-活动详情</div><div class="proto-with-prd"><div class="macos-window"><div class="macos-titlebar"><div class="macos-dot red"></div><div class="macos-dot yellow"></div><div class="macos-dot green"></div><div class="macos-title">智汇 HRMS — 文化活动详情</div></div><div class="macos-body"><div class="app-sidebar" data-comp="sidebar"><div class="v5-brand"><span class="v5-logo"><i data-lucide="blocks"></i></span>智汇 HRMS</div><div class="v5-nav-group"><div class="v5-nav-heading"><i data-lucide="heart-handshake"></i>组织文化与发展</div><a class="sidebar-item v5-nav-item" href="#culture-home"><i data-lucide="layout-dashboard" class="nav-icon"></i>文化发展工作台</a><a class="sidebar-item v5-nav-item" href="#culture-rules"><i data-lucide="bell-ring" class="nav-icon"></i>智能提醒规则</a><a class="sidebar-item v5-nav-item active" href="#culture-events" aria-current="page"><i data-lucide="calendar-heart" class="nav-icon"></i>文化活动</a><a class="sidebar-item v5-nav-item" href="#culture-care"><i data-lucide="heart" class="nav-icon"></i>员工关怀</a><a class="sidebar-item v5-nav-item" href="#culture-learning"><i data-lucide="graduation-cap" class="nav-icon"></i>学习发展</a></div><div class="v5-nav-group"><div class="v5-nav-heading"><i data-lucide="book-open-text"></i>知识库</div><a class="sidebar-item v5-nav-item" href="#knowledge-editor"><i data-lucide="file-pen-line" class="nav-icon"></i>内容发布与版本</a><a class="sidebar-item v5-nav-item" href="#knowledge-access"><i data-lucide="shield-check" class="nav-icon"></i>知识权限管理</a></div><div class="v5-sidebar-note">华东主体 · 上海 / 新加坡<br>HRBP 工作空间</div></div><div class="win-chrome-bar"><div class="win-chrome-drag"></div><div class="win-chrome-actions"><div class="win-avatar-chip"><span class="win-avatar">林</span><span class="badge-free">HRBP</span></div></div></div><main class="app-main"><div class="v5-view">
 <header class="v5-head" data-comp="event-detail-head"><div><a class="v5-link" href="#culture-events">← 返回活动列表</a><h1 id="event-detail-title">跨地区文化交流周</h1><p id="event-detail-subtitle">活动编号 ACT-1028 · 文化交流</p></div><span id="event-detail-status" class="badge badge-info">报名中</span></header>
 <div class="v5-metrics" data-comp="event-detail-metrics"><div class="v5-metric"><span>报名 / 上限</span><strong id="event-detail-count">86 / 120</strong><small>有效报名记录累计</small></div><div class="v5-metric"><span>活动时间</span><strong id="event-detail-date">11/08 - 11/15</strong><small id="event-detail-deadline">报名截止 11/07 18:00</small></div><div class="v5-metric"><span>负责人</span><strong id="event-detail-owner">林琦</strong><small>文化运营组</small></div></div>
-<div class="v5-split"><section class="v5-panel" data-comp="event-detail-info"><div class="v5-panel-head"><h2>活动信息</h2></div><div class="v5-row"><div><strong>活动说明</strong><small id="event-detail-description">上海与新加坡团队共同参与的文化分享与线上问答。</small></div></div><div class="v5-row"><div><strong>适用范围</strong><small id="event-detail-scope">上海、新加坡 · 全员</small></div></div><div class="v5-row"><div><strong>地点 / 方式</strong><small id="event-detail-place">线上会议室 A</small></div></div></section><section class="v5-panel" data-comp="event-detail-action"><div class="v5-panel-head"><h2 id="event-detail-action-title">报名与执行概览</h2></div><p class="v5-muted" id="event-detail-action-copy">管理员查看报名人数及活动结果；员工在 IM 端查看详情并报名。</p><div id="event-detail-result" hidden><div class="v5-row"><div><strong>参与与签到</strong><small id="event-result-attendance">参与 43 人，签到 41 人</small></div></div><div class="v5-row"><div><strong>反馈与复盘</strong><small id="event-result-feedback">39 人提交反馈，结果可按活动编号追溯。</small></div></div></div><div class="v5-event-detail-actions"><button type="button" class="btn btn-secondary btn-sm" id="event-view-registrations"><i data-lucide="users"></i> 查看报名情况</button><button type="button" class="btn btn-secondary btn-sm" id="event-view-employee"><i data-lucide="external-link"></i> 查看员工端活动</button></div></section></div></div></main></div></div><div class="prd-panel-wrap"><aside class="prd-panel"><div class="prd-panel__title">功能概览</div><div class="prd-panel__body"><div class="prd-section"><div class="prd-section__title">V5.0-03-活动详情</div><ul><li data-target="event-detail-head"><strong>活动详情</strong>：从完整活动列表进入，同一页面按活动状态展示报名、未开放或已结束结果。</li><li data-target="event-detail-metrics"><strong>活动数据</strong>：展示时间、报名截止、人数上限和负责人；报名数据由有效记录累计。</li><li data-target="event-detail-info"><strong>活动信息</strong>：仅展示活动说明、适用范围和地点；报名流程与知识库互不关联。</li><li data-target="event-detail-action"><strong>报名与结果</strong>：两个入口位于说明和结果下方的独立操作栏；管理员从「查看报名情况」进入独立名单页，「查看员工端活动」打开同一活动的员工端只读预览；结束后可查看签到与反馈复盘。</li></ul></div></div></aside></div></div></div>
+<div class="v5-split"><section class="v5-panel" data-comp="event-detail-info"><div class="v5-panel-head"><h2>活动信息</h2></div><div class="v5-row"><div><strong>活动说明</strong><small id="event-detail-description">上海与新加坡团队共同参与的文化分享与线上问答。</small></div></div><div class="v5-row"><div><strong>适用范围</strong><small id="event-detail-scope">上海、新加坡 · 全员</small></div></div><div class="v5-row"><div><strong>地点 / 方式</strong><small id="event-detail-place">线上会议室 A</small></div></div></section><section class="v5-panel" data-comp="event-detail-action"><div class="v5-panel-head"><h2 id="event-detail-action-title">报名与执行概览</h2></div><p class="v5-muted" id="event-detail-action-copy">管理员查看报名人数及活动结果；员工在 IM 端查看详情并报名。</p><div id="event-detail-result" hidden><div class="v5-row"><div><strong>参与与签到</strong><small id="event-result-attendance">参与 43 人，签到 41 人</small></div></div><div class="v5-row"><div><strong>反馈与复盘</strong><small id="event-result-feedback">39 人提交反馈，结果可按活动编号追溯。</small></div></div></div><div class="v5-event-detail-actions"><button type="button" class="btn btn-secondary btn-sm" id="event-view-registrations"><i data-lucide="users"></i> 查看报名情况</button><button type="button" class="btn btn-secondary btn-sm" id="event-view-survey" hidden><i data-lucide="chart-no-axes-combined"></i> 查看满意度结果</button><button type="button" class="btn btn-secondary btn-sm" id="event-view-employee"><i data-lucide="external-link"></i> 查看员工端活动</button></div></section></div></div></main></div></div><div class="prd-panel-wrap"><aside class="prd-panel"><div class="prd-panel__title">功能概览</div><div class="prd-panel__body"><div class="prd-section"><div class="prd-section__title">V5.0-03-活动详情</div><ul><li data-target="event-detail-head"><strong>活动详情</strong>：从完整活动列表进入，同一页面按活动状态展示报名、未开放或已结束结果。</li><li data-target="event-detail-metrics"><strong>活动数据</strong>：展示时间、报名截止、人数上限和负责人；报名数据由有效记录累计。</li><li data-target="event-detail-info"><strong>活动信息</strong>：仅展示活动说明、适用范围和地点；报名流程与知识库互不关联。</li><li data-target="event-detail-action"><strong>报名与满意度结果</strong>：操作栏中「查看报名情况」进入独立名单页，「查看员工端活动」打开同一活动的员工端只读预览；配置了满意度模板且活动结束后，「查看满意度结果」定位到本页的提交人数、整体均分和逐项均分。未配置模板不显示入口，活动进行中不可提前查看结果。</li></ul></div></div></aside></div></div></div>
 
 
 <div id="culture-event-registrations" class="proto-stack">
@@ -1860,7 +1884,7 @@ body{justify-content:flex-start;justify-content:safe center}
           <header class="v5-head" data-comp="registration-head"><div><a class="v5-link" href="#culture-event-detail">← 返回活动详情</a><h1 id="registration-title">跨地区文化交流周 · 报名情况</h1><p id="registration-subtitle">活动编号 ACT-1028 · 11/08 - 11/15</p></div><span class="badge badge-info" id="registration-event-status">报名中</span></header>
           <div class="v5-metrics" data-comp="registration-metrics" style="grid-template-columns:repeat(3,minmax(0,1fr))"><div class="v5-metric"><span>有效报名 / 上限</span><strong id="registration-total">86 / 120</strong><small>按员工报名记录累计</small></div><div class="v5-metric"><span>上海</span><strong id="registration-shanghai">43</strong><small>有效报名</small></div><div class="v5-metric"><span>新加坡</span><strong id="registration-singapore">43</strong><small>有效报名</small></div></div>
           <div class="v5-toolbar" data-comp="registration-filters"><select class="form-input" id="registration-region" aria-label="筛选报名地区"><option value="">全部地区</option><option>上海</option><option>新加坡</option></select><select class="form-input" id="registration-checkin" aria-label="筛选签到状态"><option value="">全部签到状态</option><option>待签到</option><option>已签到</option><option>未签到</option><option>未执行</option></select><input class="form-input v5-filter-search" id="registration-keyword" placeholder="员工姓名 / ID" aria-label="搜索报名员工"><button type="button" class="btn btn-ghost btn-sm" data-filter-reset="culture-event-registrations" title="重置筛选"><i data-lucide="rotate-ccw"></i> 重置</button><span class="v5-spacer"></span><span class="v5-muted" id="registration-filter-count">86 条报名</span></div>
-          <section class="v5-panel" data-comp="registration-list"><div class="v5-panel-head"><h2>报名名单</h2><span class="v5-muted">按报名时间倒序</span></div><table class="v5-table"><thead><tr><th>员工 / ID</th><th>部门</th><th>地区</th><th>报名时间</th><th>报名状态</th><th>签到状态</th></tr></thead><tbody id="registration-rows"></tbody></table><p class="v5-list-empty" id="registration-empty" hidden>没有符合条件的报名记录。</p><div class="v5-pagination" id="registration-pagination"><span class="v5-muted" id="registration-page-count"></span><div class="v5-actions"><button type="button" class="btn btn-secondary btn-sm" id="registration-prev" aria-label="上一页" title="上一页"><i data-lucide="chevron-left"></i></button><button type="button" class="btn btn-secondary btn-sm" id="registration-next" aria-label="下一页" title="下一页"><i data-lucide="chevron-right"></i></button></div></div></section>
+          <section class="v5-panel" data-comp="registration-list"><div class="v5-panel-head"><h2>报名名单</h2><span class="v5-muted">按报名时间倒序</span></div><table class="v5-table"><thead><tr><th>员工 / ID</th><th>部门</th><th>地区</th><th>报名时间</th><th>报名状态</th><th>报名方式</th><th>签到状态</th></tr></thead><tbody id="registration-rows"></tbody></table><p class="v5-list-empty" id="registration-empty" hidden>没有符合条件的报名记录。</p><div class="v5-pagination" id="registration-pagination"><span class="v5-muted" id="registration-page-count"></span><div class="v5-actions"><button type="button" class="btn btn-secondary btn-sm" id="registration-prev" aria-label="上一页" title="上一页"><i data-lucide="chevron-left"></i></button><button type="button" class="btn btn-secondary btn-sm" id="registration-next" aria-label="下一页" title="下一页"><i data-lucide="chevron-right"></i></button></div></div></section>
         </div></main>
       </div>
     </div>
@@ -1898,74 +1922,161 @@ body{justify-content:flex-start;justify-content:safe center}
 
 
 <div id="culture-learning" class="proto-stack"><div class="section-label">V5.0-05 学习发展</div><div class="proto-with-prd"><div class="macos-window"><div class="macos-titlebar"><div class="macos-dot red"></div><div class="macos-dot yellow"></div><div class="macos-dot green"></div><div class="macos-title">智汇 HRMS — 学习发展</div></div><div class="macos-body"><div class="app-sidebar"><div class="v5-brand"><span class="v5-logo"><i data-lucide="blocks"></i></span>智汇 HRMS</div><div class="v5-nav-group"><div class="v5-nav-heading"><i data-lucide="heart-handshake"></i>组织文化与发展</div><a class="sidebar-item v5-nav-item" href="#culture-home"><i data-lucide="layout-dashboard" class="nav-icon"></i>文化发展工作台</a><a class="sidebar-item v5-nav-item" href="#culture-rules"><i data-lucide="bell-ring" class="nav-icon"></i>智能提醒规则</a><a class="sidebar-item v5-nav-item" href="#culture-events"><i data-lucide="calendar-heart" class="nav-icon"></i>文化活动</a><a class="sidebar-item v5-nav-item" href="#culture-care"><i data-lucide="heart" class="nav-icon"></i>员工关怀</a><a class="sidebar-item v5-nav-item active" href="#culture-learning" aria-current="page"><i data-lucide="graduation-cap" class="nav-icon"></i>学习发展</a></div><div class="v5-nav-group"><div class="v5-nav-heading"><i data-lucide="book-open-text"></i>知识库</div><a class="sidebar-item v5-nav-item" href="#knowledge-editor"><i data-lucide="file-pen-line" class="nav-icon"></i>内容发布与版本</a><a class="sidebar-item v5-nav-item" href="#knowledge-access"><i data-lucide="shield-check" class="nav-icon"></i>知识权限管理</a></div><div class="v5-sidebar-note">学习发展 · 培训管理</div></div><div class="win-chrome-bar"><div class="win-chrome-drag"></div><div class="win-chrome-actions"><div class="win-avatar-chip"><span class="win-avatar">林</span><span class="badge-free">HRBP</span></div></div></div><main class="app-main"><div class="v5-view"><header class="v5-head" data-comp="learning-head"><div><h1>学习发展</h1><p>分别管理培训计划与课程；员工在 IM 端自主报名课程。</p></div><button class="btn btn-primary btn-sm" data-go="culture-learning-create"><i data-lucide="plus"></i> 新建</button></header><div class="v5-toolbar" data-comp="learning-filters"><div class="inline-tabs" style="margin:0"><button type="button" class="inline-tab active" data-learning-tab="全部">全部</button><button type="button" class="inline-tab" data-learning-tab="培训计划">培训计划</button><button type="button" class="inline-tab" data-learning-tab="课程">课程</button></div><select class="form-input" id="learning-status-filter" aria-label="筛选状态"><option value="">全部状态</option><option>进行中</option><option>报名中</option><option>已结束</option></select><input class="form-input v5-filter-search" id="learning-keyword-filter" placeholder="计划 / 课程名称" aria-label="搜索培训计划或课程"><button type="button" class="btn btn-ghost btn-sm" data-filter-reset="culture-learning" title="重置筛选"><i data-lucide="rotate-ccw"></i> 重置</button><span class="v5-spacer"></span><span class="v5-muted" id="learning-list-count">3 项</span></div>
-<section class="v5-panel" data-comp="courses"><div class="v5-panel-head"><h2>全部培训计划与课程</h2></div><table class="v5-table"><thead><tr><th>名称 / 类型</th><th>时间</th><th>报名人数</th><th>状态</th><th>操作</th></tr></thead><tbody id="learning-admin-rows"><tr data-learning-kind="培训计划" data-plan-course="collaboration"><td><strong>新任主管管理训练营</strong><br><span class="v5-muted">培训计划 · 关联课程：跨地区协作实践</span><br><small class="v5-muted" data-plan-progress>关联课程进度：已签到 0 / 34 · 已评价 0 / 34</small></td><td>11/12 14:00</td><td class="v5-muted">不适用</td><td><span class="badge badge-info">进行中</span></td><td><span class="v5-muted">无需报名</span><button type="button" class="btn btn-ghost btn-sm" data-course-admin="collaboration">查看进度</button></td></tr><tr data-learning-kind="课程" data-course-id="collaboration"><td><strong>跨地区协作实践</strong><br><span class="v5-muted">课程 · 线上培训 · 双语材料</span></td><td>11/16 10:00</td><td data-course-count>34 / 50</td><td><span class="badge badge-info">报名中</span></td><td><button type="button" class="btn btn-ghost btn-sm" data-course-admin="collaboration">查看报名</button></td></tr><tr data-learning-kind="课程" data-course-id="onboarding"><td><strong>员工制度入门</strong><br><span class="v5-muted">课程 · 员工手册 v3.2</span></td><td>09/18 15:00</td><td data-course-count>45 / 45</td><td><span class="badge badge-success">已结束</span></td><td><button type="button" class="btn btn-ghost btn-sm" data-course-admin="onboarding">查看记录</button></td></tr></tbody></table><p class="v5-list-empty" id="learning-list-empty" hidden>没有符合条件的培训计划或课程，请调整筛选条件。</p></section>
+<section class="v5-panel" data-comp="courses"><div class="v5-panel-head"><h2>全部培训计划与课程</h2></div><table class="v5-table"><thead><tr><th>名称 / 类型</th><th>时间</th><th>报名人数</th><th>状态</th><th>操作</th></tr></thead><tbody id="learning-admin-rows"><tr data-learning-kind="培训计划" data-training-id="training-manager-camp" data-plan-course="collaboration"><td><strong>新任主管管理训练营</strong><br><span class="v5-muted">培训计划 · 关联课程：跨地区协作实践</span><br><small class="v5-muted" data-plan-progress>关联课程进度：已签到 0 / 34 · 已评价 0 / 34</small></td><td>11/12 14:00</td><td class="v5-muted">不适用</td><td><span class="badge badge-info">进行中</span></td><td><span class="v5-muted">无需报名</span><button type="button" class="btn btn-ghost btn-sm" data-training-detail="training-manager-camp">查看进度</button></td></tr><tr data-learning-kind="课程" data-course-id="collaboration"><td><strong>跨地区协作实践</strong><br><span class="v5-muted">课程 · 线上培训 · 双语材料</span></td><td>11/16 10:00</td><td data-course-count>34 / 50</td><td><span class="badge badge-info">报名中</span></td><td><button type="button" class="btn btn-ghost btn-sm" data-course-admin="collaboration">查看报名</button></td></tr><tr data-learning-kind="课程" data-course-id="onboarding"><td><strong>员工制度入门</strong><br><span class="v5-muted">课程 · 员工手册 v3.2</span></td><td>09/18 15:00</td><td data-course-count>45 / 45</td><td><span class="badge badge-success">已结束</span></td><td><button type="button" class="btn btn-ghost btn-sm" data-course-admin="onboarding">查看记录</button></td></tr></tbody></table><p class="v5-list-empty" id="learning-list-empty" hidden>没有符合条件的培训计划或课程，请调整筛选条件。</p></section>
 <div class="v5-metrics" data-comp="learning-metrics"><div class="v5-metric"><span>本季度培训计划</span><strong>8</strong><small>6 项进行中</small></div><div class="v5-metric"><span>待签到</span><strong>42</strong><small>涉及 2 门课程</small></div><div class="v5-metric"><span>后台评价完成率</span><strong>78%</strong><small>目标 90%</small></div><div class="v5-metric"><span>已归档学习记录</span><strong>216</strong><small>关联员工档案</small></div></div><section class="v5-panel" data-comp="learning-record"><div class="v5-panel-head"><h2>学习结果闭环</h2></div><div class="v5-row"><div><strong>课程报名</strong><small>员工 IM 自主报名，按员工 ID 留存</small></div><span class="badge badge-success">已记录</span></div><div class="v5-row"><div><strong>签到与评价</strong><small>员工 IM 签到；讲师或管理员在后台录入评价</small></div><span class="badge badge-info">待归档</span></div><div class="v5-row"><div><strong>员工成长档案</strong><small>历史培训记录关联员工 ID</small></div><a class="v5-link" href="#culture-home">查看</a></div></section></div></main></div></div>
 <div class="prd-panel-wrap"><aside class="prd-panel"><div class="prd-panel__title">功能概览</div><div class="prd-panel__body"><div class="prd-section"><div class="prd-section__title">V5.0-05 学习发展</div><ul>
-  <li data-target="learning-head"><strong>学习发展入口</strong>：管理端统一查看培训计划和课程；点击「新建」进入类型配置页，先选类型再填写对应字段。员工仅在 IM 端报名适用课程，培训计划无需报名。</li>
-  <li data-target="learning-filters"><strong>类型与状态筛选</strong>：通过「全部 / 培训计划 / 课程」页签切换类型，再按进行中、报名中、已结束及名称组合筛选；重置恢复全部，并显示匹配数量和空结果提示。</li>
-  <li data-target="courses"><strong>计划列表</strong>：展示计划名称、时间、关联课程和进行状态；报名列显示「不适用」，操作区提示无需报名。有已关联课程时，「查看进度」进入该课程学习记录。</li>
-  <li data-target="courses"><strong>课程列表</strong>：展示课程名称、开课时间、员工 IM 有效报名人数/名额和状态；「查看报名 / 查看记录」进入课程记录页，管理端不替员工提交报名。</li>
+  <li data-target="learning-head"><strong>三个管理视图</strong>：本模块仅 HR 可使用，员工发展计划、群体培训计划和课程分开呈现；标题区右侧「新建」随当前视图进入对应的独立配置页。培训计划和课程分别配置、发布；员工仅在 IM 端报名课程，培训计划无需报名。</li>
+  <li data-target="learning-development-filters"><strong>发展计划筛选</strong>：在页签上方按计划状态、HR 负责人及员工姓名 / ID / 培养目标组合查询，显示匹配数；重置只清空筛选条件，不切换当前管理视图。</li>
+  <li data-target="learning-filters"><strong>切换与查找</strong>：三个页签互不混列；发展计划显示按员工制定的目标与执行状态，培训计划和课程分别按状态、名称筛选，重置恢复当前类型全部结果。</li>
+  <li data-target="learning-development"><strong>员工发展计划</strong>：按员工列出目标、HR 负责人和状态；「查看计划」进入独立详情页，由 HR 统一制定、维护目标并跟进周进度。</li>
+  <li data-target="courses"><strong>培训计划</strong>：展示群体计划的名称、时间、关联课程和进行状态；报名列显示「不适用」。「查看进度」进入所选培训计划的独立详情页，查看计划配置及关联课程进度，未关联课程的计划也可进入。</li>
+  <li data-target="courses"><strong>课程</strong>：仅展示课程名称、开课时间、员工 IM 有效报名人数/名额和状态；「查看报名 / 查看记录」进入课程记录页，管理端不替员工提交报名。</li>
   <li data-target="courses"><strong>关联课程进度</strong>：计划行分别显示关联课程已签到人数与已评价人数，以该课程参与人数为分母；两项独立统计，未评价不计作已完成。</li>
   <li data-target="learning-metrics"><strong>季度指标</strong>：概览培训计划数量、待签到人数、后台评价完成率和已归档学习记录。此处为跨课程汇总，逐人签到及评价以课程记录页为准。</li>
   <li data-target="learning-record"><strong>学习结果留存</strong>：课程报名/计划指派来源、员工签到、讲师或管理员评价分别记录在员工学习档案中；后续从课程记录查看，员工在 IM 查看本人结果。</li>
+  <li data-target="learning-head"><strong>员工端边界</strong>：员工 IM 的「我的发展」只读查看本人发展目标与周进度；计划制定、修改目标与进度录入均由 HR 在管理后台完成。</li>
 </ul></div></div></aside></div></div></div>
 
 
 
+<div id="culture-development" class="proto-stack">
+  <div class="section-label">V5.0-05-员工发展计划详情</div><div class="proto-with-prd"><div class="macos-window"><div class="macos-titlebar"><div class="macos-dot red"></div><div class="macos-dot yellow"></div><div class="macos-dot green"></div><div class="macos-title">智汇 HRMS — 员工发展计划详情</div></div>
+  <div class="macos-body"><div class="app-sidebar"><div class="v5-brand"><span class="v5-logo"><i data-lucide="blocks"></i></span>智汇 HRMS</div><div class="v5-nav-group"><div class="v5-nav-heading">组织文化与发展</div><a class="sidebar-item v5-nav-item" href="#culture-home"><i data-lucide="layout-dashboard" class="nav-icon"></i>文化发展工作台</a><a class="sidebar-item v5-nav-item" href="#culture-rules"><i data-lucide="bell-ring" class="nav-icon"></i>智能提醒规则</a><a class="sidebar-item v5-nav-item" href="#culture-events"><i data-lucide="calendar-heart" class="nav-icon"></i>文化活动</a><a class="sidebar-item v5-nav-item" href="#culture-care"><i data-lucide="heart" class="nav-icon"></i>员工关怀</a><a class="sidebar-item v5-nav-item active" href="#culture-learning" aria-current="page"><i data-lucide="graduation-cap" class="nav-icon"></i>学习发展</a></div><div class="v5-nav-group"><div class="v5-nav-heading">知识库</div><a class="sidebar-item v5-nav-item" href="#knowledge-management"><i data-lucide="book-open-text" class="nav-icon"></i>知识库管理</a></div><div class="v5-sidebar-note">员工发展 · HR 录入与跟进</div></div><div class="win-chrome-bar"><div class="win-chrome-drag"></div><div class="win-chrome-actions"><div class="win-avatar-chip"><span class="win-avatar">林</span><span class="badge-free">HRBP</span></div></div></div>
+  <main class="app-main"><div class="v5-view"><header class="v5-head" data-comp="development-head"><div><a class="v5-link" href="#culture-learning">← 返回发展计划列表</a><h1 id="development-page-title">陈晓 · 员工发展计划</h1><p id="development-page-subtitle">查看目标、执行状态和 HR 每周跟进记录。</p></div></header>
+  <section class="v5-panel" data-comp="development-alerts" id="development-alert-panel" hidden><div class="v5-panel-head"><h2>本计划延期事项</h2><span class="badge badge-warn" id="development-alert-count">0 项待跟进</span></div><div id="development-alert-list"></div></section>
+  <section class="v5-panel" data-comp="development-form" id="development-form-panel" hidden><div class="v5-panel-head"><h2 id="development-form-title">新建培养计划</h2></div><form id="development-form"><div class="v5-formgrid"><div class="form-group"><label class="form-label" for="development-employee">指定员工 *</label><select class="form-input" id="development-employee" required><option value="">请选择员工</option><option value="01842">陈晓 · 01842 · 上海</option><option value="02719">林可 · 02719 · 新加坡</option><option value="00564">周岳 · 00564 · 上海</option></select></div><div class="form-group"><label class="form-label" for="development-owner">HR 负责人 *</label><select class="form-input" id="development-owner" required><option value="">请选择 HR 负责人</option><option selected>林琦</option><option>李敏</option><option>王珊</option></select></div><div class="form-group v5-wide"><label class="form-label" for="development-goal">整体培养目标 *</label><input class="form-input" id="development-goal" maxlength="100" required placeholder="例如：独立主持跨地区项目复盘"></div><div class="form-group"><label class="form-label" for="development-start">开始日期 *</label><input class="form-input" id="development-start" type="date" value="2026-11-02" required></div><div class="form-group"><label class="form-label" for="development-weeks">跟进周期（周）*</label><input class="form-input" id="development-weeks" type="number" min="2" max="8" value="4" required></div><div class="form-group v5-wide"><label class="form-label" for="development-week-goals">每周目标（每行一周）*</label><textarea class="form-textarea" id="development-week-goals" required placeholder="梳理当前能力差距&#10;完成跨团队协作实践&#10;独立主持项目复盘&#10;总结改进计划"></textarea><div class="form-tip">行数须与周期一致；到期日从开始日期起每隔 7 天计算。</div></div></div><p class="v5-form-error" id="development-error" role="alert"></p><div class="v5-create-actions"><button type="button" class="btn btn-ghost btn-sm" id="development-cancel">取消</button><button type="submit" class="btn btn-primary btn-sm">保存计划</button></div></form></section>
+  <section class="v5-panel" data-comp="development-detail" id="development-detail-panel"><div class="v5-panel-head"><div><h2 id="development-detail-title"></h2><p class="v5-muted" id="development-detail-summary"></p></div><span class="badge" id="development-detail-status"></span></div><div class="v5-plan-status" id="development-plan-actions"><button type="button" class="btn btn-secondary btn-sm" id="development-edit"><i data-lucide="file-pen-line"></i> 编辑计划</button></div><div id="development-week-list"></div><form id="development-progress-form" class="v5-survey-form" hidden><h3 id="development-progress-title">记录本周跟进</h3><div class="v5-formgrid"><div class="form-group"><label class="form-label" for="development-progress">完成进度（%）*</label><input class="form-input" id="development-progress" type="number" min="0" max="100" required></div><div class="form-group"><label class="form-label" for="development-progress-note">跟进记录 *</label><input class="form-input" id="development-progress-note" maxlength="200" required placeholder="记录完成情况、阻碍与下一步"></div></div><div class="v5-create-actions"><button type="button" class="btn btn-ghost btn-sm" id="development-progress-cancel">取消</button><button type="submit" class="btn btn-primary btn-sm">保存本周进度</button></div></form></section>
+  </div></main></div></div><div class="prd-panel-wrap"><aside class="prd-panel"><div class="prd-panel__title">功能概览</div><div class="prd-panel__body"><div class="prd-section"><div class="prd-section__title">V5.0-05-员工发展计划详情</div><ul><li data-target="development-head"><strong>单条计划</strong>：从学习发展页的员工发展计划列表选择员工后进入，仅呈现该员工当前所选计划；返回保留列表的筛选条件。新建入口也在列表页，进入本页表单。</li><li data-target="development-head"><strong>使用范围</strong>：本模块仅 HR 可使用，计划制定、信息录入及后续跟进统一由 HR 负责；员工本人在 IM 只读查看计划与进度。</li><li data-target="development-form"><strong>HR 制定</strong>：填写指定员工、HR 负责人、整体目标及 2 至 8 周的逐周目标；按开始日期生成到期日，保存后直接进入「进行中」，由 HR 开始跟进。</li><li data-target="development-form"><strong>计划校验</strong>：必填信息和周目标数量校验通过后才可保存；同一员工已有进行中计划时提示查看现有计划，不重复创建。</li><li data-target="development-detail"><strong>编辑计划</strong>：进行中计划可由 HR 调整负责人、整体目标及逐周安排；编辑时员工固定，按周保留已有完成度和跟进记录，含跟进记录的周目标不可通过缩短周期删除。取消不保存修改。</li><li data-target="development-detail"><strong>HR 跟进</strong>：详情显示员工、HR 负责人、目标、执行状态和逐周进度；HR 录入完成度及文字说明，达到 100% 为该周完成，到期未完成为延期，所有周目标完成后计划转为「已完成」。保存后列表和员工 IM 同步更新。</li><li data-target="development-alerts"><strong>本计划延期</strong>：只有所选计划出现延期周目标时显示，列出该周目标与当前进度；通知入口优先定位最近一条延期计划，不在详情页重复全量列表。</li></ul></div></div></aside></div></div></div>
+
 <div id="culture-learning-create" class="proto-stack">
-  <div class="section-label">V5.0-05-配置培训计划 / 课程</div>
+  <div class="section-label">V5.0-05-新建培训计划</div>
   <div class="proto-with-prd">
     <div class="macos-window">
-      <div class="macos-titlebar"><div class="macos-dot red"></div><div class="macos-dot yellow"></div><div class="macos-dot green"></div><div class="macos-title">智汇 HRMS — 新建培训计划 / 课程</div></div>
+      <div class="macos-titlebar"><div class="macos-dot red"></div><div class="macos-dot yellow"></div><div class="macos-dot green"></div><div class="macos-title">智汇 HRMS — 新建培训计划</div></div>
       <div class="macos-body">
         <div class="app-sidebar"><div class="v5-brand"><span class="v5-logo"><i data-lucide="blocks"></i></span>智汇 HRMS</div><div class="v5-nav-group"><div class="v5-nav-heading"><i data-lucide="heart-handshake"></i>组织文化与发展</div><a class="sidebar-item v5-nav-item" href="#culture-home"><i data-lucide="layout-dashboard" class="nav-icon"></i>文化发展工作台</a><a class="sidebar-item v5-nav-item" href="#culture-rules"><i data-lucide="bell-ring" class="nav-icon"></i>智能提醒规则</a><a class="sidebar-item v5-nav-item" href="#culture-events"><i data-lucide="calendar-heart" class="nav-icon"></i>文化活动</a><a class="sidebar-item v5-nav-item" href="#culture-care"><i data-lucide="heart" class="nav-icon"></i>员工关怀</a><a class="sidebar-item v5-nav-item" href="#culture-learning"><i data-lucide="graduation-cap" class="nav-icon"></i>学习发展</a></div><div class="v5-nav-group"><div class="v5-nav-heading"><i data-lucide="book-open-text"></i>知识库</div><a class="sidebar-item v5-nav-item" href="#knowledge-editor"><i data-lucide="file-pen-line" class="nav-icon"></i>内容发布与版本</a><a class="sidebar-item v5-nav-item" href="#knowledge-access"><i data-lucide="shield-check" class="nav-icon"></i>知识权限管理</a></div><div class="v5-sidebar-note">学习发展 · 培训管理</div></div>
         <div class="win-chrome-bar"><div class="win-chrome-drag"></div><div class="win-chrome-actions"><div class="win-avatar-chip"><span class="win-avatar">林</span><span class="badge-free">HRBP</span></div></div></div>
         <main class="app-main"><div class="v5-view">
-          <header class="v5-head" data-comp="training-create-head"><div><a class="v5-link" href="#culture-learning">← 返回学习发展</a><h1>新建培训计划</h1><p id="training-form-description">培训计划无需报名，按范围与时间组织培训。</p></div></header>
+          <header class="v5-head" data-comp="training-create-head"><div><a class="v5-link" href="#culture-learning" data-learning-return="培训计划">← 返回培训计划列表</a><h1>新建培训计划</h1><p>培训计划无需报名，按范围与时间组织培训。</p></div></header>
           <form id="training-create-form" class="v5-create-layout v5-create-layout--single">
             <div>
-              <section class="v5-form-band" data-comp="training-kind"><h2>配置类型 *</h2><div class="v5-type-switch" role="radiogroup" aria-label="选择配置类型"><label><input type="radio" name="kind" value="培训计划" checked> 培训计划</label><label><input type="radio" name="kind" value="课程"> 课程</label></div></section>
+              <input type="hidden" name="kind" value="培训计划">
               <section class="v5-form-band" data-comp="training-basic"><h2>基本信息</h2><div class="v5-formgrid">
                 <div class="form-group"><label class="form-label" for="training-title" id="training-title-label">计划名称 *</label><input class="form-input" id="training-title" name="title" value="11 月新任主管管理训练营" maxlength="50" required></div>
-                <div class="form-group" data-plan-only><label class="form-label" for="training-course">关联课程</label><select class="form-input" id="training-course" name="course"><option value="">暂不关联</option><option value="collaboration">跨地区协作实践</option><option value="onboarding">员工制度入门</option></select></div>
+                <div class="form-group"><label class="form-label" for="training-course">关联课程</label><select class="form-input" id="training-course" name="course"><option value="">暂不关联</option><option value="collaboration">跨地区协作实践</option><option value="onboarding">员工制度入门</option></select></div>
                 <div class="form-group"><label class="form-label" for="training-owner">培训负责人 *</label><select class="form-input" id="training-owner" name="owner" required><option>林琦 · 学习发展组</option><option>李敏 · 上海 HRBP</option><option>王珊 · 新加坡 HRBP</option></select></div>
                 <div class="form-group"><label class="form-label" for="training-mode">授课方式 *</label><select class="form-input" id="training-mode" name="mode" required><option>线上培训</option><option>线下培训</option><option>混合培训</option></select></div>
               </div></section>
               <section class="v5-form-band" data-comp="training-schedule"><h2>时间安排</h2><div class="v5-formgrid">
                 <div class="form-group"><label class="form-label" for="training-start">开课时间 *</label><input class="form-input" id="training-start" name="start" type="datetime-local" value="2026-11-12T14:00" required></div>
                 <div class="form-group"><label class="form-label" for="training-end">结束时间 *</label><input class="form-input" id="training-end" name="end" type="datetime-local" value="2026-11-12T16:00" required></div>
-                <div class="form-group" data-course-only hidden><label class="form-label" for="training-deadline">员工 IM 报名截止 *</label><input class="form-input" id="training-deadline" name="deadline" type="datetime-local" value="2026-11-11T18:00" disabled required></div>
-                <div class="form-group" data-course-only hidden><label class="form-label" for="training-capacity">课程名额上限（人）*</label><input class="form-input" id="training-capacity" name="capacity" type="number" min="1" value="35" disabled required><div class="form-tip">仅员工 IM 端支持自主报名。</div></div>
               </div></section>
               <section class="v5-form-band" data-comp="training-audience"><h2>适用对象与完成规则</h2><div class="v5-formgrid">
                 <div class="form-group"><label class="form-label">适用地区 *</label><div class="v5-check-row"><label><input type="checkbox" name="region" value="上海" checked> 上海</label><label><input type="checkbox" name="region" value="新加坡" checked> 新加坡</label></div></div>
                 <div class="form-group"><label class="form-label" for="training-audience">员工群体 *</label><select class="form-input" id="training-audience" name="audience" required><option>新任主管</option><option>新员工</option><option>适用地区全员</option></select></div>
                 <div class="form-group"><label class="form-label" for="training-material">培训材料</label><select class="form-input" id="training-material" name="material"><option>管理者手册 v2.1 · 知识库</option><option>新员工入职培训材料 v1.1 · 知识库</option><option>暂不关联</option></select></div>
-                <div class="form-group" data-course-only hidden><label class="form-label">课程完成要求</label><div class="v5-check-row"><label><input type="checkbox" name="signIn" checked disabled> 员工 IM 签到</label><label><input type="checkbox" name="assessment" checked disabled> 讲师 / 管理员评价</label></div></div>
-                <div class="form-group" data-plan-only><label class="form-label">计划完成口径</label><p class="v5-muted" style="margin:6px 0">按关联课程的签到与评价结果汇总；计划本身无需报名或签到。</p></div>
+                <div class="form-group"><label class="form-label">计划完成口径</label><p class="v5-muted" style="margin:6px 0">按关联课程的签到与评价结果汇总；计划本身无需报名或签到。</p></div>
               </div></section>
-              <section class="v5-form-band" data-comp="training-checkin" data-course-only hidden><h2>签到时间窗</h2><div class="v5-formgrid" data-signin-fields>
-                <div class="form-group"><label class="form-label" for="training-checkin-start">开始时间 *</label><input class="form-input" id="training-checkin-start" name="checkinStart" type="datetime-local" value="2026-11-12T13:45" disabled required></div>
-                <div class="form-group"><label class="form-label" for="training-checkin-end">截止时间 *</label><input class="form-input" id="training-checkin-end" name="checkinEnd" type="datetime-local" value="2026-11-12T14:30" disabled required></div>
-              </div><p class="v5-muted v5-small">员工在 IM 的课程详情签到；讲师或管理员在课程学习记录中补签及录入评价。</p></section>
-              <div class="v5-create-actions" data-comp="training-actions"><p class="v5-form-error" id="training-form-error" role="status"></p><button type="button" class="btn btn-ghost btn-sm" data-go="culture-learning">取消</button><button type="submit" class="btn btn-primary btn-sm">发布培训计划</button></div>
+              <div class="v5-create-actions" data-comp="training-actions"><p class="v5-form-error" id="training-form-error" role="status"></p><button type="button" class="btn btn-ghost btn-sm" data-go="culture-learning" data-learning-return="培训计划">取消</button><button type="submit" class="btn btn-primary btn-sm">发布培训计划</button></div>
             </div>
           </form>
         </div></main>
       </div>
     </div>
-    <div class="prd-panel-wrap"><aside class="prd-panel"><div class="prd-panel__title">功能概览</div><div class="prd-panel__body"><div class="prd-section"><div class="prd-section__title">V5.0-05-配置培训计划 / 课程</div><ul>
-      <li data-target="training-create-head"><strong>页面标题与返回</strong>：默认进入「新建培训计划」；切换配置类型后标题、说明和主按钮同步改为对应类型。返回学习发展列表时不发布当前填写内容。</li>
-      <li data-target="training-kind"><strong>配置类型</strong>：先在「培训计划」「课程」中单选。两类记录分别发布和展示；切换后仅显示该类型需要的字段，隐藏字段不参与提交校验。</li>
+    <div class="prd-panel-wrap"><aside class="prd-panel"><div class="prd-panel__title">功能概览</div><div class="prd-panel__body"><div class="prd-section"><div class="prd-section__title">V5.0-05-新建培训计划</div><ul>
+      <li data-target="training-create-head"><strong>独立配置页</strong>：从培训计划列表的「新建培训计划」或页面索引进入；页面仅配置培训计划。返回或取消回到培训计划列表，不发布当前填写内容。</li>
       <li data-target="training-basic"><strong>培训计划基本信息</strong>：填写计划名称、培训负责人和授课方式；关联课程为可选项，未关联时计划可独立发布，但不产生课程签到或评价数据。</li>
-      <li data-target="training-basic"><strong>课程基本信息</strong>：填写课程名称、负责人和授课方式。课程是可报名、可签到、可评价的独立记录，不在课程表单中选择关联课程；计划通过「关联课程」引用已发布课程。</li>
-      <li data-target="training-schedule"><strong>起止时间校验</strong>：培训计划和课程均须填写开课与结束时间；结束时间必须晚于开课时间，错误时阻止发布并在表单底部提示。</li>
-      <li data-target="training-schedule"><strong>课程报名配置</strong>：仅课程填写员工 IM 报名截止与名额上限，截止不得晚于开课时间，名额须大于 0；培训计划不展示报名截止和名额，也不需要员工报名。</li>
-      <li data-target="training-audience"><strong>适用对象</strong>：至少选择一个地区，并指定员工群体；员工端只展示本人所属地区和群体适用的课程。培训材料可关联已有知识，材料访问仍受知识权限控制。</li>
-      <li data-target="training-audience"><strong>完成规则</strong>：培训计划不单独签到或测评，只按关联课程汇总学习结果。课程可分别要求员工 IM 签到及讲师/管理员后台评价；员工不填写评价结果。</li>
-      <li data-target="training-checkin"><strong>签到时间窗</strong>：仅启用课程签到时填写开始和截止时间；截止须晚于开始且不晚于课程结束。员工报名或被指派后，在签到开放时从 IM 课程详情完成一次签到。</li>
-      <li data-target="training-actions"><strong>发布与失败反馈</strong>：表单必填项、地区及时间校验通过后直接发布；未通过时保留已填写内容并给出错误提示。此页不提供草稿或管理端预览。</li>
-      <li data-target="training-actions"><strong>发布结果</strong>：计划进入学习发展列表，关联课程时显示课程签到与评价进度；课程进入管理端列表并同步到适用员工的 IM 课程列表，后续报名、签到及评价按员工 ID 记录。</li>
+      <li data-target="training-schedule"><strong>时间安排</strong>：填写开课与结束时间，结束须晚于开始；培训计划无需配置报名截止、名额或签到时间窗。</li>
+      <li data-target="training-audience"><strong>适用对象</strong>：至少选择一个地区并指定员工群体；培训材料可关联已有知识，材料访问仍受知识权限控制。</li>
+      <li data-target="training-audience"><strong>完成规则</strong>：计划本身无需员工报名或签到，按关联课程汇总签到及评价结果；未关联课程时不产生课程学习记录。</li>
+      <li data-target="training-actions"><strong>发布与失败反馈</strong>：必填、地区及时间校验通过后发布并回到培训计划列表；失败时保留填写内容并提示原因。</li>
+      <li data-target="training-actions"><strong>发布结果</strong>：新计划显示为「进行中」，关联课程时展示该课程签到与评价进度；适用员工可在 IM 我的培训查看计划及关联学习结果。</li>
+    </ul></div></div></aside></div>
+  </div>
+</div>
+
+<div id="culture-training-detail" class="proto-stack">
+  <div class="section-label">V5.0-05-培训计划详情</div>
+  <div class="proto-with-prd"><div class="macos-window">
+    <div class="macos-titlebar"><div class="macos-dot red"></div><div class="macos-dot yellow"></div><div class="macos-dot green"></div><div class="macos-title">智汇 HRMS — 培训计划详情</div></div>
+    <div class="macos-body">
+      <div class="app-sidebar"><div class="v5-brand"><span class="v5-logo"><i data-lucide="blocks"></i></span>智汇 HRMS</div><div class="v5-nav-group"><div class="v5-nav-heading"><i data-lucide="heart-handshake"></i>组织文化与发展</div><a class="sidebar-item v5-nav-item" href="#culture-home"><i data-lucide="layout-dashboard" class="nav-icon"></i>文化发展工作台</a><a class="sidebar-item v5-nav-item" href="#culture-rules"><i data-lucide="bell-ring" class="nav-icon"></i>智能提醒规则</a><a class="sidebar-item v5-nav-item" href="#culture-events"><i data-lucide="calendar-heart" class="nav-icon"></i>文化活动</a><a class="sidebar-item v5-nav-item" href="#culture-care"><i data-lucide="heart" class="nav-icon"></i>员工关怀</a><a class="sidebar-item v5-nav-item active" href="#culture-learning" aria-current="page"><i data-lucide="graduation-cap" class="nav-icon"></i>学习发展</a></div><div class="v5-nav-group"><div class="v5-nav-heading"><i data-lucide="book-open-text"></i>知识库</div><a class="sidebar-item v5-nav-item" href="#knowledge-editor"><i data-lucide="file-pen-line" class="nav-icon"></i>内容发布与版本</a><a class="sidebar-item v5-nav-item" href="#knowledge-access"><i data-lucide="shield-check" class="nav-icon"></i>知识权限管理</a></div><div class="v5-sidebar-note">学习发展 · 培训计划</div></div>
+      <div class="win-chrome-bar"><div class="win-chrome-drag"></div><div class="win-chrome-actions"><div class="win-avatar-chip"><span class="win-avatar">林</span><span class="badge-free">HRBP</span></div></div></div>
+      <main class="app-main"><div class="v5-view">
+        <header class="v5-head" data-comp="training-detail-head"><div><a class="v5-link" href="#culture-learning" data-learning-return="培训计划">← 返回培训计划列表</a><h1 id="training-detail-title">新任主管管理训练营</h1><p>培训计划详情</p></div><span class="badge badge-info" id="training-detail-status">进行中</span></header>
+        <section class="v5-form-band" data-comp="training-detail-info"><h2>计划信息</h2><dl class="v5-formgrid">
+          <div><dt class="form-label">培训负责人</dt><dd id="training-detail-owner"></dd></div>
+          <div><dt class="form-label">授课方式</dt><dd id="training-detail-mode"></dd></div>
+          <div><dt class="form-label">开课时间</dt><dd id="training-detail-start"></dd></div>
+          <div><dt class="form-label">结束时间</dt><dd id="training-detail-end"></dd></div>
+          <div><dt class="form-label">适用地区</dt><dd id="training-detail-regions"></dd></div>
+          <div><dt class="form-label">员工群体</dt><dd id="training-detail-audience"></dd></div>
+          <div><dt class="form-label">培训材料</dt><dd id="training-detail-material"></dd></div>
+          <div><dt class="form-label">计划完成口径</dt><dd>按关联课程的签到与评价结果汇总</dd></div>
+        </dl></section>
+        <section class="v5-form-band" data-comp="training-detail-progress"><h2>关联课程与学习进度</h2>
+          <p class="v5-list-empty" id="training-detail-empty" hidden>本计划尚未关联课程，暂无课程学习进度。</p>
+          <table class="v5-table" id="training-detail-courses"><thead><tr><th>关联课程</th><th>开课时间</th><th>课程状态</th><th>已签到 / 参与</th><th>已评价 / 参与</th><th>操作</th></tr></thead><tbody><tr><td id="training-detail-course-name"></td><td id="training-detail-course-time"></td><td><span class="badge" id="training-detail-course-status"></span></td><td id="training-detail-signed"></td><td id="training-detail-evaluated"></td><td><button type="button" class="btn btn-ghost btn-sm" id="training-detail-course">查看课程记录</button></td></tr></tbody></table>
+        </section>
+      </div></main>
+    </div></div><div class="prd-panel-wrap"><aside class="prd-panel"><div class="prd-panel__title">功能概览</div><div class="prd-panel__body"><div class="prd-section"><div class="prd-section__title">V5.0-05-培训计划详情</div><ul>
+      <li data-target="training-detail-head"><strong>计划身份与返回</strong>：从培训计划列表的「查看进度」进入，标题及状态来自所选计划；返回回到培训计划列表并保留筛选条件。</li>
+      <li data-target="training-detail-info"><strong>计划信息</strong>：负责人、授课方式、起止时间、适用地区、员工群体及培训材料均来自该计划的创建配置；计划本身无需员工报名或签到。</li>
+      <li data-target="training-detail-progress"><strong>关联课程进度</strong>：展示所关联课程的名称、开课时间、状态、签到与评价人数；两项以课程参与人数为分母分别统计，课程记录变更后同步更新。</li>
+      <li data-target="training-detail-progress"><strong>查看课程记录</strong>：点击后进入该关联课程的签到与评价页，返回按钮回到当前培训计划详情。</li>
+      <li data-target="training-detail-progress"><strong>未关联课程</strong>：保留完整计划信息，显示「本计划尚未关联课程，暂无课程学习进度」；不显示课程表格和课程记录入口。</li>
+    </ul></div></div></aside></div></div>
+</div>
+
+<div id="culture-course-create" class="proto-stack">
+  <div class="section-label">V5.0-05-新建课程</div>
+  <div class="proto-with-prd">
+    <div class="macos-window">
+      <div class="macos-titlebar"><div class="macos-dot red"></div><div class="macos-dot yellow"></div><div class="macos-dot green"></div><div class="macos-title">智汇 HRMS — 新建课程</div></div>
+      <div class="macos-body">
+        <div class="app-sidebar"><div class="v5-brand"><span class="v5-logo"><i data-lucide="blocks"></i></span>智汇 HRMS</div><div class="v5-nav-group"><div class="v5-nav-heading"><i data-lucide="heart-handshake"></i>组织文化与发展</div><a class="sidebar-item v5-nav-item" href="#culture-home"><i data-lucide="layout-dashboard" class="nav-icon"></i>文化发展工作台</a><a class="sidebar-item v5-nav-item" href="#culture-rules"><i data-lucide="bell-ring" class="nav-icon"></i>智能提醒规则</a><a class="sidebar-item v5-nav-item" href="#culture-events"><i data-lucide="calendar-heart" class="nav-icon"></i>文化活动</a><a class="sidebar-item v5-nav-item" href="#culture-care"><i data-lucide="heart" class="nav-icon"></i>员工关怀</a><a class="sidebar-item v5-nav-item active" href="#culture-learning" aria-current="page"><i data-lucide="graduation-cap" class="nav-icon"></i>学习发展</a></div><div class="v5-nav-group"><div class="v5-nav-heading"><i data-lucide="book-open-text"></i>知识库</div><a class="sidebar-item v5-nav-item" href="#knowledge-editor"><i data-lucide="file-pen-line" class="nav-icon"></i>内容发布与版本</a><a class="sidebar-item v5-nav-item" href="#knowledge-access"><i data-lucide="shield-check" class="nav-icon"></i>知识权限管理</a></div><div class="v5-sidebar-note">学习发展 · 课程配置</div></div>
+        <div class="win-chrome-bar"><div class="win-chrome-drag"></div><div class="win-chrome-actions"><div class="win-avatar-chip"><span class="win-avatar">林</span><span class="badge-free">HRBP</span></div></div></div>
+        <main class="app-main"><div class="v5-view">
+          <header class="v5-head" data-comp="course-create-head"><div><a class="v5-link" href="#culture-learning" data-learning-return="课程">← 返回课程列表</a><h1>新建课程</h1><p>配置课程时间、名额与员工 IM 自主报名。</p></div></header>
+          <form id="course-create-form" class="v5-create-layout v5-create-layout--single">
+            <div>
+              <input type="hidden" name="kind" value="课程">
+              <section class="v5-form-band" data-comp="course-create-basic"><h2>基本信息</h2><div class="v5-formgrid">
+                <div class="form-group"><label class="form-label" for="course-create-title">课程名称 *</label><input class="form-input" id="course-create-title" name="title" value="跨地区协作实践" maxlength="50" required></div>
+                <div class="form-group"><label class="form-label" for="course-create-owner">课程负责人 *</label><select class="form-input" id="course-create-owner" name="owner" required><option>林琦 · 学习发展组</option><option>李敏 · 上海 HRBP</option><option>王珊 · 新加坡 HRBP</option></select></div>
+                <div class="form-group"><label class="form-label" for="course-create-mode">授课方式 *</label><select class="form-input" id="course-create-mode" name="mode" required><option>线上培训</option><option>线下培训</option><option>混合培训</option></select></div>
+              </div></section>
+              <section class="v5-form-band" data-comp="course-create-schedule"><h2>时间与报名</h2><div class="v5-formgrid">
+                <div class="form-group"><label class="form-label" for="course-create-start">开课时间 *</label><input class="form-input" id="course-create-start" name="start" type="datetime-local" value="2026-11-12T14:00" required></div>
+                <div class="form-group"><label class="form-label" for="course-create-end">结束时间 *</label><input class="form-input" id="course-create-end" name="end" type="datetime-local" value="2026-11-12T16:00" required></div>
+                <div class="form-group"><label class="form-label" for="course-create-deadline">员工 IM 报名截止 *</label><input class="form-input" id="course-create-deadline" name="deadline" type="datetime-local" value="2026-11-11T18:00" required></div>
+                <div class="form-group"><label class="form-label" for="course-create-capacity">课程名额上限（人）*</label><input class="form-input" id="course-create-capacity" name="capacity" type="number" min="1" value="35" required></div>
+              </div></section>
+              <section class="v5-form-band" data-comp="course-create-audience"><h2>适用对象与完成规则</h2><div class="v5-formgrid">
+                <div class="form-group"><label class="form-label">适用地区 *</label><div class="v5-check-row"><label><input type="checkbox" name="region" value="上海" checked> 上海</label><label><input type="checkbox" name="region" value="新加坡" checked> 新加坡</label></div></div>
+                <div class="form-group"><label class="form-label" for="course-create-audience">员工群体 *</label><select class="form-input" id="course-create-audience" name="audience" required><option selected>适用地区全员</option><option>新任主管</option><option>新员工</option></select></div>
+                <div class="form-group"><label class="form-label" for="course-create-material">培训材料</label><select class="form-input" id="course-create-material" name="material"><option>管理者手册 v2.1 · 知识库</option><option>新员工入职培训材料 v1.1 · 知识库</option><option>暂不关联</option></select></div>
+                <div class="form-group"><label class="form-label">课程完成要求</label><div class="v5-check-row"><label><input type="checkbox" name="signIn" checked> 员工 IM 签到</label><label><input type="checkbox" name="assessment" checked> 讲师 / 管理员评价</label></div></div>
+              </div></section>
+              <section class="v5-form-band" data-comp="course-create-checkin"><h2>签到时间窗</h2><div class="v5-formgrid">
+                <div class="form-group"><label class="form-label" for="course-create-checkin-start">开始时间 *</label><input class="form-input" id="course-create-checkin-start" name="checkinStart" type="datetime-local" value="2026-11-12T13:45" required></div>
+                <div class="form-group"><label class="form-label" for="course-create-checkin-end">截止时间 *</label><input class="form-input" id="course-create-checkin-end" name="checkinEnd" type="datetime-local" value="2026-11-12T14:30" required></div>
+              </div></section>
+              <div class="v5-create-actions" data-comp="course-create-actions"><p class="v5-form-error" id="course-create-error" role="status"></p><button type="button" class="btn btn-ghost btn-sm" data-go="culture-learning" data-learning-return="课程">取消</button><button type="submit" class="btn btn-primary btn-sm">发布课程</button></div>
+            </div>
+          </form>
+        </div></main>
+      </div>
+    </div>
+    <div class="prd-panel-wrap"><aside class="prd-panel"><div class="prd-panel__title">功能概览</div><div class="prd-panel__body"><div class="prd-section"><div class="prd-section__title">V5.0-05-新建课程</div><ul>
+      <li data-target="course-create-head"><strong>独立配置页</strong>：从课程列表的「新建课程」或页面索引进入；页面仅配置课程，返回或取消回到课程列表，不发布当前填写内容。</li>
+      <li data-target="course-create-basic"><strong>基本信息</strong>：填写课程名称、课程负责人和授课方式；课程独立发布，培训计划可在其配置页选择关联已发布课程。</li>
+      <li data-target="course-create-schedule"><strong>时间与报名</strong>：填写开课、结束、报名截止和名额上限；结束须晚于开课，报名截止不得晚于开课，名额须为正整数。</li>
+      <li data-target="course-create-audience"><strong>适用对象</strong>：至少选择一个地区并指定员工群体；员工 IM 仅展示本人适用的课程，关联材料访问仍受知识权限控制。</li>
+      <li data-target="course-create-audience"><strong>完成要求</strong>：可分别启用员工 IM 签到和讲师 / 管理员后台评价；员工仅查看后台评价结果。</li>
+      <li data-target="course-create-checkin"><strong>签到时间窗</strong>：启用签到时显示开始和截止字段，截止须晚于开始且不晚于课程结束；关闭签到时隐藏此区域并停止校验，保留已填时间供重新启用。</li>
+      <li data-target="course-create-actions"><strong>发布与失败反馈</strong>：必填、地区和时间校验通过后发布并回到课程列表；失败时保留填写内容并提示原因。</li>
+      <li data-target="course-create-actions"><strong>发布结果</strong>：新课程显示为「报名中」，报名人数从 0 开始，适用员工在 IM 自主报名；该课程同时加入新建培训计划的关联课程选项。</li>
     </ul></div></div></aside></div>
   </div>
 </div>
@@ -1985,7 +2096,7 @@ body{justify-content:flex-start;justify-content:safe center}
         <form class="v5-panel" id="course-evaluation-form" data-comp="course-admin-evaluation" hidden><div class="v5-panel-head"><h2 id="course-evaluation-title">录入讲师评价</h2><span class="v5-muted">讲师 / 管理员</span></div><div class="v5-formgrid"><div class="form-group"><label class="form-label" for="course-evaluation-result">评价结果 *</label><select class="form-input" id="course-evaluation-result" required><option value="">请选择</option><option>通过</option><option>需改进</option></select></div><div class="form-group"><label class="form-label" for="course-evaluation-comment">评价意见 *</label><input class="form-input" id="course-evaluation-comment" maxlength="120" placeholder="填写学习表现与改进建议" required></div></div><div class="v5-create-actions"><button type="button" class="btn btn-ghost btn-sm" id="course-evaluation-cancel">取消</button><button type="submit" class="btn btn-primary btn-sm">保存评价</button></div></form>
       </div></main>
     </div></div><div class="prd-panel-wrap"><aside class="prd-panel"><div class="prd-panel__title">功能概览</div><div class="prd-panel__body"><div class="prd-section"><div class="prd-section__title">V5.0-05-课程签到与评价</div><ul>
-      <li data-target="course-admin-head"><strong>课程记录入口</strong>：从学习发展列表的课程「查看报名 / 查看记录」或关联计划的「查看进度」进入，标题、状态与场次随所选课程变化；返回列表保留课程记录。</li>
+      <li data-target="course-admin-head"><strong>课程记录入口</strong>：从课程列表的「查看报名 / 查看记录」或培训计划详情的「查看课程记录」进入，标题、状态与场次随所选课程变化；从计划进入时返回当前计划详情，从课程列表进入时返回课程列表。</li>
       <li data-target="course-admin-metrics"><strong>进度统计</strong>：分别展示参与人数/名额、已签到人数和已录入评价人数，互不等同；「当前员工结果」展示示例员工从报名到完成的状态。培训计划只汇总关联课程，不在此重复创建签到记录。</li>
       <li data-target="course-admin-checkin"><strong>签到开放状态</strong>：展示课程配置的签到起止时间，以及未开放、开放中、已结束状态；未要求签到的课程标为不要求。开放时员工 IM 的签到按钮可用，重复签到不可再次提交。</li>
       <li data-target="course-admin-checkin"><strong>结束签到</strong>：只有开放中可结束；结束后未签到者显示「未签到」，员工端不可补签，管理员可在该员工行发起补签。</li>
@@ -2067,6 +2178,23 @@ body{justify-content:flex-start;justify-content:safe center}
 
 <div id="knowledge-article" class="proto-stack employee-section"><div class="section-label">V5.0-E03-知识详情与阅读确认</div><div class="proto-with-prd"><div class="macos-window"><div class="macos-titlebar"><div class="macos-dot red"></div><div class="macos-dot yellow"></div><div class="macos-dot green"></div><div class="macos-title">智汇 HRMS — 员工 IM · 员工手册：休假与补卡规定</div></div><div class="macos-body"><div class="app-sidebar v5-employee-sidebar"><div class="v5-brand"><span class="v5-logo"><i data-lucide="blocks"></i></span>智汇 HRMS</div><div class="v5-nav-group"><div class="v5-nav-heading"><i data-lucide="message-circle"></i>员工 IM</div><a class="sidebar-item v5-nav-item" href="#employee-events"><i data-lucide="calendar-heart" class="nav-icon"></i>文化活动</a><a class="sidebar-item v5-nav-item" href="#employee-care"><i data-lucide="heart" class="nav-icon"></i>我的关怀 <span class="badge badge-info" data-care-unread>1</span></a><a class="sidebar-item v5-nav-item active" href="#knowledge-home" aria-current="page"><i data-lucide="book-open-text" class="nav-icon"></i>知识库</a></div><div class="v5-sidebar-note">员工 IM · 仅本人可见</div></div><div class="win-chrome-bar"><div class="win-chrome-drag"></div><div class="win-chrome-actions"><div class="win-avatar-chip"><span class="win-avatar">陈</span><span class="badge-free">员工</span></div></div></div><main class="app-main"><div class="v5-view"><header class="v5-head"><div><a class="v5-link" href="#knowledge-home">← 返回知识库</a><h1>员工手册：休假与补卡规定</h1><p>人事制度 / 考勤 · 适用于上海与新加坡员工</p></div><div class="v5-actions" data-comp="article-actions"><button class="v5-icon-btn" id="favorite-article" title="收藏知识" aria-pressed="false"><i data-lucide="bookmark"></i></button><button class="v5-icon-btn" title="反馈或纠错" data-dialog="feedback"><i data-lucide="message-square-warning"></i></button><button class="v5-icon-btn" title="复制知识链接" data-toast="知识链接已复制（原型示意）"><i data-lucide="link"></i></button></div></header><div class="v5-article" data-comp="article"><div class="v5-meta"><span>版本 v3.2 · 已发布</span><span>责任人：人力资源政策组</span><span>生效：2026-09-01</span><span>复审：2026-12-01</span></div><h2>休假申请与缺卡处理</h2><p>员工应在请假开始前通过统一工作台提交申请，并在审批完成后查看考勤结果。紧急情况无法提前申请的，应及时告知直属上级并补充申请。</p><h3>一、请假流程</h3><ul><li>选择休假类型、起止时间并提交申请；审批结果将回写考勤记录。</li><li>跨地区员工按所在地生效规则执行，历史审批记录保留。</li></ul><h3>二、缺卡与补卡</h3><p>发生缺卡后，员工应在规定时限内发起补卡申请。审批通过后，系统更新当月考勤明细；已锁定月份须由授权人员重开。</p><div class="v5-note">附件：休假申请操作指引.pdf · 云文档：常见休假问题（仅授权用户可访问）</div></div><div class="v5-confirm" data-comp="read-confirm"><div><strong>阅读确认</strong><p id="read-status">你尚未确认阅读本版本。确认后记录员工、版本和确认时间。</p></div><button class="btn btn-primary btn-sm" id="confirm-read">确认已阅读</button></div><div class="v5-small v5-muted" data-comp="article-foot">历史版本仅管理员可查看；员工始终以当前适用版本为准。纠错与反馈进入责任人待办。</div></div></main></div></div><div class="prd-panel-wrap"><aside class="prd-panel"><div class="prd-panel__title">功能概览</div><div class="prd-panel__body"><div class="prd-section"><div class="prd-section__title">V5.0-E03-知识详情与阅读确认</div><ul><li data-target="article-actions"><strong>收藏与反馈</strong>：员工在 IM 端收藏制度后，可从知识库的「我的收藏」重新打开；取消收藏即移出列表。反馈进入知识责任人待办。</li><li data-target="article"><strong>制度正文</strong>：展示当前适用的已发布版本、责任人、生效日、复审日期和有权访问的附件及云文档。</li><li data-target="read-confirm"><strong>阅读确认</strong>：指定制度推送给适用员工；点击后记录员工 ID、内容版本与确认时间，同版本不可重复确认。</li><li data-target="article-foot"><strong>版本边界</strong>：历史版本仅供管理员审计；员工不可通过旧链接访问失效或无权版本。</li></ul></div></div></aside></div></div></div>
 
+
+<div id="employee-development" class="proto-stack employee-section">
+  <div class="section-label">V5.0-E02A 我的发展</div><div class="proto-with-prd"><div class="macos-window">
+    <div class="macos-titlebar"><div class="macos-dot red"></div><div class="macos-dot yellow"></div><div class="macos-dot green"></div><div class="macos-title">智汇 HRMS — 员工 IM · 我的发展</div></div>
+    <div class="macos-body"><div class="app-sidebar v5-employee-sidebar"><div class="v5-brand"><span class="v5-logo"><i data-lucide="blocks"></i></span>智汇 HRMS</div><div class="v5-nav-group"><div class="v5-nav-heading">员工 IM</div><a class="sidebar-item v5-nav-item" href="#employee-events"><i data-lucide="calendar-heart" class="nav-icon"></i>文化活动</a><a class="sidebar-item v5-nav-item" href="#employee-care"><i data-lucide="heart" class="nav-icon"></i>我的关怀</a><a class="sidebar-item v5-nav-item active" href="#employee-development" aria-current="page"><i data-lucide="target" class="nav-icon"></i>我的发展</a><a class="sidebar-item v5-nav-item" href="#employee-training"><i data-lucide="clipboard-list" class="nav-icon"></i>我的培训</a><a class="sidebar-item v5-nav-item" href="#employee-learning"><i data-lucide="graduation-cap" class="nav-icon"></i>我的课程</a><a class="sidebar-item v5-nav-item" href="#knowledge-home"><i data-lucide="book-open-text" class="nav-icon"></i>知识库</a></div><div class="v5-sidebar-note">员工 IM · 仅本人可见</div></div>
+      <div class="win-chrome-bar"><div class="win-chrome-drag"></div><div class="win-chrome-actions"><div class="win-avatar-chip"><span class="win-avatar">陈</span><span class="badge-free">员工</span></div></div></div>
+      <main class="app-main"><div class="v5-view"><header class="v5-head" data-comp="employee-development-head"><div><div class="v5-eyebrow">员工 IM / 我的发展</div><h1>我的发展</h1><p>查看本人发展目标、执行状态和每周跟进进度。</p></div></header>
+        <section class="v5-panel" data-comp="employee-development-list"><div class="v5-panel-head"><h2>我的发展计划</h2><span class="v5-muted" id="employee-development-count"></span></div><table class="v5-table"><thead><tr><th>培养目标</th><th>HR 负责人</th><th>开始日期</th><th>状态</th><th>操作</th></tr></thead><tbody id="employee-development-rows"></tbody></table><p class="v5-list-empty" id="employee-development-empty" hidden>暂无面向本人的发展计划。</p></section>
+        <section class="v5-panel" data-comp="employee-development-detail" id="employee-development-detail" hidden><div class="v5-panel-head"><div><h2 id="employee-development-goal"></h2><p class="v5-muted" id="employee-development-people"></p></div><span class="badge" id="employee-development-state"></span></div><div id="employee-development-weeks"></div></section>
+      </div></main>
+    </div></div><div class="prd-panel-wrap"><aside class="prd-panel"><div class="prd-panel__title">功能概览</div><div class="prd-panel__body"><div class="prd-section"><div class="prd-section__title">V5.0-E02A 我的发展</div><ul>
+      <li data-target="employee-development-head"><strong>员工入口</strong>：员工 IM 侧栏新增「我的发展」；按登录员工 ID 展示本人目标，不可查看其他员工计划，也不与培训计划或课程报名混淆。</li>
+      <li data-target="employee-development-list"><strong>本人计划</strong>：列出目标、HR 负责人、开始日期和执行状态，区分「进行中」和「已完成」；所有信息由 HR 在后台录入和维护，员工仅可查看。</li>
+      <li data-target="employee-development-list"><strong>查看进度</strong>：默认收起计划详情；点击「查看进度」后在列表下方展开所选计划，按钮变为「收起进度」，再次点击收起详情。选择另一条计划时切换为对应进度。</li>
+      <li data-target="employee-development-detail"><strong>逐周进度</strong>：打开计划后逐周查看目标、到期日、完成度、延期/已完成状态以及 HR 最近一次跟进记录；后台保存进度后同步刷新，本人只读。</li>
+    </ul></div></div></aside></div></div>
+</div>
 
 <div id="employee-training" class="proto-stack employee-section">
   <div class="section-label">V5.0-E02A 我的培训</div>
@@ -2176,18 +2304,20 @@ body{justify-content:flex-start;justify-content:safe center}
     <li data-target="event-scope"><strong>筛选顺序</strong>：地区、类型、负责人及名称/编号先限定数据范围，再由状态页签切换全部、进行中、未开始、已结束和已终止；结果数只统计当前组合命中项。</li>
     <li data-target="events"><strong>状态与报名</strong>：报名开放的活动展示有效报名数及上限；未开始可开放报名，已结束保留结果，已终止停止新增报名但保留历史。</li>
     <li data-target="events"><strong>列表操作</strong>：「查看详情」进入活动信息与报名概览；「编辑」回填原活动并保留编号；提前终止需确认原因，操作后状态和工作台活动数同步更新。</li>
+    <li data-target="events"><strong>满意度模板入口</strong>：未结束活动的「满意度模板」进入同一活动编辑表单并定位模板字段；已结束活动只读查看反馈结果，不修改既有答卷。</li>
   </ul></div>
   <div data-prd-page="culture-event-create"><ul>
     <li data-target="activity-basic"><strong>员工可见内容</strong>：名称、说明、地点或会议链接在员工 IM 活动详情展示；活动类型供管理筛选，负责人对本活动的后续维护负责。</li>
     <li data-target="activity-schedule"><strong>时间校验</strong>：报名截止早于活动开始，结束晚于开始；报名上限须为正整数，编辑已有活动时不得低于当前有效报名数，错误提示保留已填内容。</li>
-    <li data-target="activity-audience"><strong>地域边界</strong>：至少选择一个授权地区并指定员工群体，员工只看到本人符合范围的活动；发布通知仅面向此次适用人员，编辑不重复群发。</li>
+    <li data-target="activity-audience"><strong>地域边界与参与方式</strong>：至少选择一个授权地区并指定员工群体；自愿报名的员工在 IM 确认，强制参加在发布时为匹配员工自动生成有效报名并通知。报名人数、员工端状态和管理端名单同步；编辑不能直接切换参与方式或改写已报名范围。</li>
+    <li data-target="activity-audience"><strong>满意度模板</strong>：可选单项标准模板，或新增模板并填写名称与多个 5 分制评分内容（1 至 10 项）；结束且签到的员工在 IM 逐项评分并可填写建议，每人只允许一次。选择不收集时员工端不展示表单。</li>
     <li data-target="activity-actions"><strong>提交结果</strong>：校验通过后发布并返回活动列表；勾选通知时开放报名，未勾选时保持未开始；取消只返回，不新增活动或报名记录。</li>
   </ul></div>
   <div data-prd-page="culture-event-registrations"><ul>
     <li data-target="registration-head"><strong>所选活动</strong>：标题、编号、时间和状态均取自进入时选中的活动；返回回到同一活动详情，不切换至其他活动名单。</li>
     <li data-target="registration-metrics"><strong>人数口径</strong>：总数为当前活动有效报名人数，地区合计与总数一致；名额来自活动配置，签到统计与报名人数分别计算。</li>
     <li data-target="registration-filters"><strong>名单查询</strong>：地区、签到状态和姓名/员工 ID 叠加生效；筛选后数量和分页同步重算，重置清空所有条件，零命中显示明确空状态。</li>
-    <li data-target="registration-list"><strong>逐人追溯</strong>：每条保留员工、部门、地区、报名时间及报名/签到状态，按报名时间倒序分页；员工 IM 新增有效报名后这里和活动详情人数一起更新。</li>
+    <li data-target="registration-list"><strong>逐人追溯</strong>：每条保留员工、部门、地区、报名时间、报名方式及报名/签到状态，自动报名标注「系统自动报名」，自愿报名标注「员工自主报名」；按时间倒序分页，两端人数同步更新。</li>
   </ul></div>
   <div data-prd-page="culture-event-detail"><ul>
     <li data-target="event-detail-head"><strong>活动身份</strong>：名称、活动编号、类型和当前状态来自所选列表项；同一编号跨编辑和结束后保持不变，返回列表仍可定位该活动。</li>
@@ -2195,6 +2325,7 @@ body{justify-content:flex-start;justify-content:safe center}
     <li data-target="event-detail-action"><strong>报名名单入口</strong>：「查看报名情况」进入独立名单页，按员工查看报名与签到；「查看员工端活动」仅用于查看员工 IM 呈现，后台详情不提供报名提交。</li>
     <li data-target="event-detail-action"><strong>两个入口的活动上下文</strong>：「查看报名情况」打开当前活动编号的管理端报名名单，并能返回该活动详情；「查看员工端活动」直接打开同一活动的员工端详情只读预览，不先跳到员工活动列表。</li>
     <li data-target="event-detail-action"><strong>结束结果</strong>：活动结束后展示参与、签到及反馈情况供复盘；活动数据留在活动模块，报名及参与结果不依赖知识库内容发布。</li>
+    <li data-target="event-detail-action"><strong>满意度汇总</strong>：展示所用模板及评分项；结束后展示提交人数、每项均分和整体均分（先算个人各项平均，再按提交人数求平均），新答卷提交后同步更新。</li>
   </ul></div>
   <div data-prd-page="culture-care"><ul>
     <li data-target="care-head"><strong>两端入口</strong>：「新建关怀计划」进入管理端表单；「查看员工端」查看本人收到的关怀消息，计划配置和员工阅读回应职责分开。</li>
@@ -2249,6 +2380,8 @@ body{justify-content:flex-start;justify-content:safe center}
     <li data-target="employee-event-action"><strong>本人报名</strong>：开放且有名额时点击「确认报名」生成当前员工一条有效记录；再次进入显示已报名，不重复占名额，管理端报名名单同步出现该员工。</li>
     <li data-target="employee-event-action"><strong>预览操作边界</strong>：管理端只读预览可展示报名按钮的员工端位置与可报名状态，但按钮禁用，不生成员工报名记录；员工本人从 IM 列表进入时恢复可操作状态。</li>
     <li data-target="employee-event-action"><strong>结束后查看</strong>：报名结束或活动已终止时按钮不可继续报名；已结束时在原详情查看本人签到、参与及反馈结果，历史报名仍可追溯。</li>
+    <li data-target="employee-event-action"><strong>强制参加</strong>：匹配范围的员工在发布时由系统自动报名，详情显示来源与已报名状态，不占用重复报名按钮；管理员名单同步展示自动报名来源。</li>
+    <li data-target="employee-event-survey"><strong>参与后满意度</strong>：活动已结束、本人已报名且签到、并配置 5 分模板时才显示表单；按模板逐项评分且全部必填，建议选填。每人仅提交一次，提交后可回看本人各项分数，管理端均分和人数同步更新；管理端预览只读。</li>
   </ul></div>
   <div data-prd-page="employee-care"><ul>
     <li data-target="employee-care-head"><strong>未读计数</strong>：只计本人已送达但详情尚未打开的消息；首次打开即标记已阅读，标题和左侧导航同步减少，未发送与取消项不参与计数。</li>
@@ -2304,6 +2437,13 @@ document.querySelectorAll('.v5-employee-sidebar .v5-nav-group').forEach(group=>{
   const care=group.querySelector('a[href="#employee-care"]');
   care?.insertAdjacentHTML('afterend','<a class="sidebar-item v5-nav-item" href="#employee-training"><i data-lucide="clipboard-list" class="nav-icon"></i>我的培训</a><a class="sidebar-item v5-nav-item" href="#employee-learning"><i data-lucide="graduation-cap" class="nav-icon"></i>我的课程</a>');
 });
+document.querySelectorAll('.v5-employee-sidebar .v5-nav-group').forEach(group=>{
+  if(group.querySelector('a[href="#employee-development"]'))return;
+  group.querySelector('a[href="#employee-training"]')?.insertAdjacentHTML('beforebegin','<a class="sidebar-item v5-nav-item" href="#employee-development"><i data-lucide="target" class="nav-icon"></i>我的发展</a>');
+});
+const employeeSectionOrder=['employee-development','employee-training','employee-learning','employee-learning-detail'];
+const employeeKnowledgeSection=document.querySelector('#knowledge-home');
+employeeSectionOrder.forEach(id=>employeeKnowledgeSection.before(document.getElementById(id)));
 document.querySelectorAll('.v5-head').forEach(header=>{
   const back=header.querySelector(':scope > div:first-child > a.v5-link[href^="#"]');
   if(!back)return;
@@ -2318,14 +2458,14 @@ document.querySelectorAll('.win-chrome-bar').forEach(bar=>{
   const actions=bar.querySelector('.win-chrome-actions');
   actions.insertAdjacentHTML('afterbegin','<button class="win-chrome-btn" title="搜索知识" data-go="knowledge-home"><i data-lucide="search" class="win-chrome-icon"></i></button>');
   if(!actions.querySelector('[title="通知"],[title="关怀消息"]'))actions.querySelector('[title="搜索知识"]').insertAdjacentHTML('afterend','<button class="win-chrome-btn" title="通知" data-toast="暂无新通知"><i data-lucide="bell" class="win-chrome-icon"></i></button>');
-  const context=bar.closest('.employee-section')?(bar.closest('.proto-stack').id.startsWith('employee-event')?'员工 IM · 文化活动':bar.closest('.proto-stack').id.startsWith('employee-care')?'员工 IM · 我的关怀':['employee-training','employee-learning','employee-learning-detail'].includes(bar.closest('.proto-stack').id)?'员工 IM · 学习发展':'员工 IM · 知识库'):bar.closest('.proto-stack').id.startsWith('culture-')?'组织文化与发展':'知识库';
+  const context=bar.closest('.employee-section')?(bar.closest('.proto-stack').id.startsWith('employee-event')?'员工 IM · 文化活动':bar.closest('.proto-stack').id.startsWith('employee-care')?'员工 IM · 我的关怀':['employee-development','employee-training','employee-learning','employee-learning-detail'].includes(bar.closest('.proto-stack').id)?'员工 IM · 学习发展':'员工 IM · 知识库'):bar.closest('.proto-stack').id.startsWith('culture-')?'组织文化与发展':'知识库';
   actions.querySelector('.win-avatar-chip').insertAdjacentHTML('beforebegin','<div class="win-credits"><i data-lucide="layout-grid" class="win-chrome-icon"></i><span>'+context+'</span></div>');
   actions.insertAdjacentHTML('beforeend','<button class="win-chrome-btn" title="菜单" data-toast="当前模块操作请使用页面内按钮"><i data-lucide="menu" class="win-chrome-icon"></i></button>');
 });
 document.querySelectorAll('.employee-section .win-chrome-actions [title="通知"]').forEach(button=>{
   button.title='查看关怀消息';button.dataset.go='employee-care';delete button.dataset.toast;
 });
-for(const [child,parent] of [['culture-event-create','culture-events'],['culture-learning-create','culture-learning'],['culture-care-form','culture-care'],['culture-care-plan','culture-care'],['culture-rule-detail','culture-rules'],['culture-rule-view','culture-rules'],['culture-exceptions','culture-rules'],['knowledge-editor','knowledge-management']]){
+for(const [child,parent] of [['culture-event-create','culture-events'],['culture-learning-create','culture-learning'],['culture-course-create','culture-learning'],['culture-care-form','culture-care'],['culture-care-plan','culture-care'],['culture-rule-detail','culture-rules'],['culture-rule-view','culture-rules'],['culture-exceptions','culture-rules'],['knowledge-editor','knowledge-management']]){
   if(child==='culture-exceptions'){
     const home=document.querySelector('#culture-exceptions .app-sidebar a[href="#culture-home"]');
     home.classList.remove('active');home.removeAttribute('aria-current');
@@ -2338,6 +2478,22 @@ const exceptionBack=document.querySelector('#culture-exceptions .v5-head .v5-bac
 exceptionBack.href='#culture-rules';exceptionBack.innerHTML='<i data-lucide="arrow-left"></i> 返回智能提醒规则';
 if(window.lucide) lucide.createIcons();
 const $=s=>document.querySelector(s);
+$('#employee-events #employee-event-count').id='employee-event-list-count';
+const learningHead=$('#culture-learning [data-comp="learning-head"]');
+const learningCreate=learningHead.querySelector('[data-go="culture-learning-create"]');
+learningCreate.id='learning-create';delete learningCreate.dataset.go;
+learningHead.querySelector('p').textContent='分别管理员工发展计划、培训计划与课程；员工在 IM 端查看本人目标并报名课程。';
+document.querySelector('#culture-development .v5-sidebar-note').textContent='员工发展 · HR 录入与跟进';
+document.querySelector('#culture-learning .prd-section [data-target="learning-development"]').innerHTML='<strong>员工发展计划列表</strong>：按员工显示目标、HR 负责人和执行状态；点击「查看计划」进入所选员工的详情，由 HR 统一录入、维护并逐周跟进。';
+const developmentFilters=document.createElement('div');developmentFilters.className='v5-toolbar';developmentFilters.dataset.comp='learning-development-filters';
+developmentFilters.innerHTML='<select class="form-input" id="development-status-filter" aria-label="筛选发展计划状态"><option value="">全部状态</option><option>进行中</option><option>已完成</option></select><select class="form-input" id="development-owner-filter" aria-label="筛选 HR 负责人"><option value="">全部 HR 负责人</option></select><input class="form-input v5-filter-search" id="development-keyword-filter" placeholder="员工姓名 / ID / 培养目标" aria-label="搜索员工发展计划"><button type="button" class="btn btn-ghost btn-sm" id="development-filter-reset"><i data-lucide="rotate-ccw"></i> 重置</button>';
+learningHead.after(developmentFilters);
+const learningTabs=$('#culture-learning .inline-tabs');
+learningTabs.replaceChildren(...['员工发展计划','培训计划','课程'].map((label,index)=>{const button=document.createElement('button');button.type='button';button.className='inline-tab'+(index===0?' active':'');button.dataset.learningTab=label;button.textContent=label;return button}));
+const learningDevelopment=document.createElement('section');learningDevelopment.className='v5-panel';learningDevelopment.dataset.comp='learning-development';
+learningDevelopment.innerHTML='<div class="v5-panel-head"><h2>员工发展计划</h2></div><table class="v5-table"><thead><tr><th>员工 / ID</th><th>培养目标</th><th>HR 负责人</th><th>状态</th><th>操作</th></tr></thead><tbody id="learning-development-rows"></tbody></table><p class="v5-list-empty" id="learning-development-empty" hidden>没有符合条件的员工发展计划。</p>';
+$('#culture-learning [data-comp="courses"]').before(learningDevelopment);
+if(window.lucide)lucide.createIcons();
 function toast(message){document.querySelector('.v5-toast')?.remove();const el=document.createElement('div');el.className='v5-toast';el.textContent=message;document.body.append(el);setTimeout(()=>el.remove(),2800)}
 const reminderSnapshot=Date.parse(document.querySelector('#culture-home [data-snapshot-date]').dataset.snapshotDate+'T00:00:00Z');
 document.querySelectorAll('#culture-home [data-reminder-due]').forEach(row=>{
@@ -2476,6 +2632,7 @@ renderAccess();
 function createFormData(form){
   const fields=Object.fromEntries(new FormData(form));
   fields.region=Array.from(form.querySelectorAll('[name="region"]:checked'),input=>input.value);
+  if(form.id==='activity-create-form')fields.surveyQuestions=Array.from($('#activity-survey-questions').querySelectorAll('input'),input=>input.value.trim());
   fields.signIn=Boolean(form.elements.signIn?.checked&&!form.elements.signIn.disabled);
   fields.assessment=Boolean(form.elements.assessment?.checked&&!form.elements.assessment.disabled);
   fields.notify=Boolean(form.elements.notify?.checked);
@@ -2494,44 +2651,71 @@ function updateFilterOptions(select,values){
   select.value=Array.from(select.options).some(option=>option.value===selected)?selected:'';
 }
 function formatPeriod(start,end){return start&&end?formatDateTime(start)+' - '+(start.slice(0,10)===end.slice(0,10)?end.slice(11,16):formatDateTime(end)):'待配置'}
-function syncTrainingKind(resetTitle){
-  const form=$('#training-create-form'),kind=form.elements.kind.value,isCourse=kind==='课程';
-  form.querySelectorAll('[data-course-only]').forEach(el=>{el.hidden=!isCourse;el.querySelectorAll('input,select').forEach(input=>input.disabled=!isCourse)});
-  form.querySelectorAll('[data-plan-only]').forEach(el=>{el.hidden=isCourse;el.querySelectorAll('input,select').forEach(input=>input.disabled=isCourse)});
-  const signInFields=form.querySelector('[data-signin-fields]'),needsSignIn=isCourse&&form.elements.signIn.checked;
-  form.querySelector('[data-comp="training-checkin"]').hidden=!needsSignIn;
-  signInFields.hidden=!needsSignIn;
-  signInFields.querySelectorAll('input').forEach(input=>input.disabled=!needsSignIn);
-  if(resetTitle){
-    const title=form.elements.title;
-    if(['11 月新任主管管理训练营','跨地区协作实践'].includes(title.value))title.value=isCourse?'跨地区协作实践':'11 月新任主管管理训练营';
-    form.elements.audience.value=isCourse?'适用地区全员':'新任主管';
-  }
-  $('#training-title-label').textContent=(isCourse?'课程':'计划')+'名称 *';
-  $('#culture-learning-create [data-comp="training-create-head"] h1').textContent='新建'+kind;
-  $('#training-form-description').textContent=isCourse?'配置课程时间、名额与员工 IM 自主报名。':'培训计划无需报名，按范围与时间组织培训。';
-  form.querySelector('[type="submit"]').textContent='发布'+kind;
+const activityDemoRoster=[
+  {employeeId:'01842',name:'陈晓',department:'产品研发中心',region:'上海',group:'适用地区全员'},
+  {employeeId:'02719',name:'林可',department:'运营管理部',region:'新加坡',group:'新员工'},
+  {employeeId:'00564',name:'周岳',department:'技术平台部',region:'上海',group:'直属经理'},
+  {employeeId:'03125',name:'许宁',department:'客户服务部',region:'上海',group:'新员工'},
+  {employeeId:'04516',name:'黄婧',department:'人力资源部',region:'新加坡',group:'直属经理'}
+];
+function eligibleActivityEmployees(data){return activityDemoRoster.filter(employee=>data.region.includes(employee.region)&&(data.audience==='适用地区全员'||employee.group===data.audience))}
+function syncActivityParticipation(){
+  const form=$('#activity-create-form'),mandatory=form.elements.participation.value==='mandatory';
+  form.elements.notify.checked=mandatory||form.elements.notify.checked;
+  form.elements.notify.disabled=mandatory||Boolean(editingActivity);
+  $('#activity-participation-help').textContent=mandatory?'强制参加：发布时自动为适用员工报名并通知本人，员工无需再次操作。':'自愿报名：员工在 IM 端确认报名。';
+}
+function surveyQuestionsFor(data){return data.surveyQuestions?.length?data.surveyQuestions:data.surveyQuestion?[data.surveyQuestion]:['整体满意度']}
+function syncActivitySurvey(){
+  const custom=$('#activity-survey-template').value==='custom',form=$('#activity-create-form');
+  form.querySelectorAll('[data-survey-custom]').forEach(group=>{group.hidden=!custom;group.querySelectorAll('input').forEach(input=>input.disabled=!custom)});
+  const rows=Array.from($('#activity-survey-questions').children);
+  rows.forEach((row,index)=>{
+    const input=row.querySelector('input'),label=row.querySelector('label');
+    input.id='activity-survey-question-'+(index+1);label.htmlFor=input.id;label.textContent='评分内容 '+(index+1)+' *';
+    row.querySelector('button').disabled=!custom||rows.length===1;
+  });
+  $('#activity-survey-add').disabled=!custom||rows.length>=10;
+}
+function addSurveyQuestion(value=''){
+  const list=$('#activity-survey-questions');if(list.children.length>=10)return;
+  const row=document.createElement('div');row.className='v5-survey-question';
+  row.innerHTML='<div><label class="form-label"></label><input class="form-input" type="text" maxlength="80" placeholder="例如：您对活动内容的满意度" required></div><button type="button" class="v5-icon-btn" title="删除评分项" aria-label="删除评分项"><i data-lucide="trash-2"></i></button>';
+  row.querySelector('input').value=value;
+  row.querySelector('button').onclick=()=>{row.remove();syncActivitySurvey()};
+  list.append(row);syncActivitySurvey();if(window.lucide)lucide.createIcons();
+}
+$('#activity-survey-add').onclick=()=>{addSurveyQuestion();$('#activity-survey-questions .v5-survey-question:last-child input').focus()};
+addSurveyQuestion();
+function syncCourseCheckin(){
+  const form=$('#course-create-form'),fields=form.querySelector('[data-comp="course-create-checkin"]'),enabled=form.elements.signIn.checked;
+  fields.hidden=!enabled;
+  fields.querySelectorAll('input').forEach(input=>input.disabled=!enabled);
 }
 function validateCreateForm(form,data){
   const error=form.querySelector('.v5-form-error');
   error.textContent='';
   if(!form.reportValidity())return false;
+  if(form.id==='activity-create-form'&&data.surveyTemplate==='custom'){
+    if(!data.surveyName.trim()||data.surveyQuestions.some(question=>!question)||new Set(data.surveyQuestions).size!==data.surveyQuestions.length){error.textContent='请填写模板名称及不重复的评分内容';return false}
+  }
   if(!data.region.length){error.textContent='请至少选择一个适用地区';return false}
   if(data.end<=data.start){error.textContent='结束时间必须晚于开始时间';return false}
-  if((!form.id.includes('training')||data.kind==='课程')&&data.deadline>data.start){error.textContent='报名截止不能晚于开始时间';return false}
+  if((form.id==='activity-create-form'||data.kind==='课程')&&data.deadline>data.start){error.textContent='报名截止不能晚于开始时间';return false}
   if(data.kind==='课程'&&data.signIn&&(data.checkinStart>=data.checkinEnd||data.checkinEnd>data.end)){
     error.textContent='签到截止须晚于开始，且不能晚于课程结束时间';return false;
   }
   return true;
 }
 function addActivity(data){
-  const id='custom-'+Date.now(),record={title:data.title,code:'ACT-'+String(Date.now()).slice(-6),status:data.notify?'进行中':'未开始',date:formatPeriod(data.start,data.end),deadline:formatDateTime(data.deadline),start:data.start,end:data.end,deadlineValue:data.deadline,region:data.region.join('、'),audience:data.audience,owner:data.owner.split(' · ')[0],ownerValue:data.owner,type:data.type,description:data.description,place:data.place,count:0,capacity:Number(data.capacity),registered:false};
+  const id='custom-'+Date.now(),mandatory=data.participation==='mandatory',matches=mandatory?eligibleActivityEmployees(data):[],record={title:data.title,code:'ACT-'+String(Date.now()).slice(-6),status:data.notify||mandatory?'进行中':'未开始',date:formatPeriod(data.start,data.end),deadline:formatDateTime(data.deadline),start:data.start,end:data.end,deadlineValue:data.deadline,region:data.region.join('、'),audience:data.audience,owner:data.owner.split(' · ')[0],ownerValue:data.owner,type:data.type,description:data.description,place:data.place,count:matches.length,capacity:Number(data.capacity),registered:matches.some(employee=>employee.employeeId==='01842'),mandatory,surveyTemplate:data.surveyTemplate,surveyName:data.surveyName,surveyQuestions:data.surveyTemplate==='custom'?data.surveyQuestions:['整体满意度'],satisfactionResponses:0,satisfactionTotal:0,satisfactionQuestionTotals:[]};
   eventData[id]=record;
+  if(mandatory)eventRegistrationData[id]=matches.map(employee=>({...employee,time:new Date().toLocaleString('sv-SE',{timeZone:'Asia/Shanghai',hour12:false}).slice(0,16),checkedIn:false,source:'系统自动报名'}));
   const row=document.createElement('tr');row.dataset.event=id;row.dataset.status=record.status;row.dataset.region=data.region.join(' ');
   const title=document.createElement('td'),strong=document.createElement('strong'),code=document.createElement('span');
   strong.textContent=data.title;code.className='v5-muted';code.textContent=record.code;title.append(strong,document.createElement('br'),code);
   const time=document.createElement('td'),scope=document.createElement('span');scope.className='v5-muted';scope.textContent=record.region+' · '+record.audience;time.append(document.createTextNode(record.date),document.createElement('br'),scope);
-  const count=document.createElement('td');count.textContent='0 / '+record.capacity;
+  const count=document.createElement('td');count.textContent=record.count+' / '+record.capacity;
   const status=document.createElement('td'),badge=document.createElement('span');badge.className='badge badge-info';badge.textContent='报名中';status.append(badge);
   const owner=document.createElement('td');owner.textContent=record.owner;
   const action=document.createElement('td'),button=document.createElement('button');button.type='button';button.className='btn btn-ghost btn-sm';button.dataset.eventDetail=id;button.textContent='查看与报名';action.append(button);
@@ -2547,10 +2731,10 @@ function addActivity(data){
   filterActivities();updateActivitySummary();
 }
 const eventData={
-  exchange:{title:'跨地区文化交流周',type:'文化交流',code:'ACT-1028',status:'进行中',date:'11/08 - 11/15',deadline:'11/07 18:00',start:'2026-11-08T09:00',end:'2026-11-15T18:00',deadlineValue:'2026-11-07T18:00',region:'上海、新加坡',audience:'全员',owner:'林琦',description:'上海与新加坡团队共同参与的文化分享与线上问答。',place:'线上会议室 A',count:86,capacity:120},
+  exchange:{title:'跨地区文化交流周',type:'文化交流',code:'ACT-1028',status:'进行中',date:'11/08 - 11/15',deadline:'11/07 18:00',start:'2026-11-08T09:00',end:'2026-11-15T18:00',deadlineValue:'2026-11-07T18:00',region:'上海、新加坡',audience:'全员',owner:'林琦',description:'上海与新加坡团队共同参与的文化分享与线上问答。',place:'线上会议室 A',count:86,capacity:120,surveyTemplate:'standard5'},
   volunteer:{title:'社区志愿服务日',type:'志愿服务',code:'ACT-1036',status:'进行中',date:'11/20 09:00',deadline:'11/18 18:00',start:'2026-11-20T09:00',end:'2026-11-20T17:00',deadlineValue:'2026-11-18T18:00',region:'上海',audience:'全员',owner:'李敏',description:'员工结伴参与社区志愿服务，签到后记录活动参与。',place:'上海社区服务中心',count:18,capacity:60},
   wellness:{title:'健康主题分享会',type:'健康主题',code:'ACT-1042',status:'未开始',date:'11/30 14:00',deadline:'11/28 18:00',start:'2026-11-30T14:00',end:'2026-11-30T16:00',deadlineValue:'2026-11-28T18:00',region:'新加坡',audience:'全员',owner:'王珊',description:'围绕身心健康与跨文化协作开展分享。',place:'新加坡会议室 B',count:0,capacity:100},
-  reading:{title:'线上读书交流会',type:'读书分享',code:'ACT-0978',status:'已结束',date:'09/01 - 09/28',deadline:'08/30 18:00',region:'上海、新加坡',audience:'全员',owner:'王珊',description:'员工围绕协作主题分享阅读心得和实践案例。',place:'线上会议室',count:43,capacity:50,attendance:'参与 43 人，签到 41 人',feedback:'39 人提交反馈，活动复盘已归档。'},
+  reading:{title:'线上读书交流会',type:'读书分享',code:'ACT-0978',status:'已结束',date:'09/01 - 09/28',deadline:'08/30 18:00',region:'上海、新加坡',audience:'全员',owner:'王珊',description:'员工围绕协作主题分享阅读心得和实践案例。',place:'线上会议室',count:43,capacity:50,attendance:'参与 43 人，签到 41 人',feedback:'活动复盘已归档。',surveyTemplate:'standard5',satisfactionResponses:39,satisfactionTotal:179,satisfactionQuestionTotals:[179]},
   teamday:{title:'地区联谊日',type:'文化交流',code:'ACT-0951',status:'已终止',date:'08/15 10:00',deadline:'08/12 18:00',region:'上海',audience:'全员',owner:'李敏',description:'上海团队的线下交流活动。',place:'上海活动中心',count:24,capacity:80,terminationReason:'场地临时不可用；原报名记录保留。'}
 };
 const eventRegistrationData={};
@@ -2588,7 +2772,7 @@ function renderActivityRow(id){
   make(data.status==='已结束'?'查看结果':'查看详情','eventDetail','btn-ghost');
   if(data.status==='进行中'||data.status==='未开始'){
     if(data.status==='未开始')make('开放报名','eventOpen','btn-secondary');
-    make('编辑','eventEdit','btn-secondary');make('提前终止','eventTerminate','btn-ghost');
+    make('编辑','eventEdit','btn-secondary');make('满意度模板','eventTemplate','btn-ghost');make('提前终止','eventTerminate','btn-ghost');
   }
   let employee=$('#employee-event-rows tr[data-employee-event="'+id+'"]');
   if(data.region.includes('上海')){
@@ -2596,7 +2780,7 @@ function renderActivityRow(id){
     employee.children[0].textContent=data.title;employee.children[1].textContent=data.date;employee.children[2].textContent=data.region;
     const employeeBadge=employee.querySelector('.badge');employeeBadge.textContent=badge.textContent;employeeBadge.className=badge.className;
     employee.querySelector('[data-employee-registered]')?.remove();
-    if(data.registered){const joined=document.createElement('span');joined.className='badge badge-success';joined.dataset.employeeRegistered='';joined.textContent='已报名';employee.children[3].append(' ',joined)}
+    if(data.registered){const joined=document.createElement('span');joined.className='badge badge-success';joined.dataset.employeeRegistered='';joined.textContent=data.mandatory?'系统已报名':'已报名';employee.children[3].append(' ',joined)}
   }else employee?.remove();
   filterEmployeeEvents();
 }
@@ -2607,7 +2791,12 @@ function editActivity(id){
   editingActivity=id;const form=$('#activity-create-form');
   for(const [name,value] of Object.entries({title:record.title,type:record.type||'文化交流',description:record.description,owner:record.ownerValue||Array.from(form.elements.owner.options).find(option=>option.value.startsWith(record.owner))?.value,place:record.place,start:record.start,end:record.end,deadline:record.deadlineValue,capacity:record.capacity,audience:record.audience==='全员'?'适用地区全员':record.audience}))if(value!==undefined)form.elements[name].value=value;
   form.querySelectorAll('[name="region"]').forEach(input=>input.checked=record.region.includes(input.value));
-  form.elements.notify.checked=false;form.elements.notify.disabled=true;
+  form.elements.participation.value=record.mandatory?'mandatory':'voluntary';
+  form.querySelectorAll('[name="participation"]').forEach(input=>input.disabled=true);
+  form.elements.surveyTemplate.value=record.surveyTemplate||'none';
+  form.elements.surveyName.value=record.surveyName||'';
+  $('#activity-survey-questions').replaceChildren();surveyQuestionsFor(record).forEach(question=>addSurveyQuestion(question));syncActivitySurvey();
+  form.elements.notify.checked=record.mandatory;syncActivityParticipation();
   $('#culture-event-create [data-comp="activity-create-head"] h1').textContent='编辑文化活动';
   $('#activity-create-form [type="submit"]').textContent='保存活动';
   $('#activity-form-error').textContent='';navigate('culture-event-create');
@@ -2630,14 +2819,18 @@ function openActivity(id){
   toast('报名已开放，适用员工可查看并报名');
 }
 document.addEventListener('click',e=>{
-  const edit=e.target.closest('[data-event-edit]'),terminate=e.target.closest('[data-event-terminate]'),open=e.target.closest('[data-event-open]');
+  const edit=e.target.closest('[data-event-edit]'),template=e.target.closest('[data-event-template]'),terminate=e.target.closest('[data-event-terminate]'),open=e.target.closest('[data-event-open]');
   if(edit)editActivity(edit.dataset.eventEdit);
+  if(template){editActivity(template.dataset.eventTemplate);$('#activity-survey-template').focus()}
   if(terminate)terminateActivity(terminate.dataset.eventTerminate);
   if(open)openActivity(open.dataset.eventOpen);
 });
 $('#culture-events [data-go="culture-event-create"]').addEventListener('click',()=>{
   editingActivity=null;$('#activity-create-form').reset();$('#activity-form-error').textContent='';
-  $('#activity-create-form').elements.notify.disabled=false;
+  $('#activity-create-form').querySelectorAll('[name="participation"]').forEach(input=>input.disabled=false);
+  $('#activity-survey-questions').replaceChildren();addSurveyQuestion();
+  syncActivityParticipation();
+  syncActivitySurvey();
   $('#culture-event-create [data-comp="activity-create-head"] h1').textContent='发起文化活动';
   $('#activity-create-form [type="submit"]').textContent='发布活动';
 });
@@ -2658,6 +2851,15 @@ function updateActivitySummary(){
 }
 updateActivitySummary();
 let selectedEvent='exchange';
+const eventSurveyAdmin=document.createElement('div');eventSurveyAdmin.className='v5-row';eventSurveyAdmin.dataset.surveyAdmin='';
+eventSurveyAdmin.innerHTML='<div><strong>满意度结果</strong><small></small></div>';
+$('#culture-event-detail [data-comp="event-detail-action"]').append(eventSurveyAdmin);
+const eventSurveyBreakdown=document.createElement('div');eventSurveyBreakdown.className='v5-survey-results';
+$('#culture-event-detail [data-comp="event-detail-action"]').append(eventSurveyBreakdown);
+$('#event-view-survey').onclick=()=>eventSurveyAdmin.scrollIntoView({block:'center',behavior:'smooth'});
+const employeeSurvey=document.createElement('form');employeeSurvey.id='employee-event-survey';employeeSurvey.className='v5-survey-form';employeeSurvey.dataset.comp='employee-event-survey';employeeSurvey.hidden=true;
+employeeSurvey.innerHTML='<h3>活动满意度</h3><div class="v5-survey-questions" id="event-survey-questions"></div><div class="form-group"><label class="form-label" for="event-survey-comment">改进建议（选填）</label><textarea id="event-survey-comment" name="comment" class="form-textarea" maxlength="200"></textarea></div><button type="submit" class="btn btn-primary btn-sm">提交评价</button><p class="v5-muted v5-small">每位参与员工只能提交一次；管理员可查看活动汇总。</p>';
+$('#employee-event-detail [data-comp="employee-event-action"]').append(employeeSurvey);
 $('#event-view-registrations').dataset.eventId=selectedEvent;
 $('#event-view-employee').dataset.eventId=selectedEvent;
 let registrationPage=1;
@@ -2676,11 +2878,11 @@ function renderRegistrations(){
   const tbody=$('#registration-rows');tbody.replaceChildren();
   for(const record of visible){
     const row=document.createElement('tr');
-    row.innerHTML='<td><strong></strong><br><span class="v5-muted"></span></td><td></td><td></td><td></td><td><span class="badge badge-success">已报名</span></td><td><span class="badge"></span></td>';
+    row.innerHTML='<td><strong></strong><br><span class="v5-muted"></span></td><td></td><td></td><td></td><td><span class="badge badge-success">已报名</span></td><td></td><td><span class="badge"></span></td>';
     row.children[0].querySelector('strong').textContent=record.name;
     row.children[0].querySelector('.v5-muted').textContent=record.employeeId;
-    row.children[1].textContent=record.department;row.children[2].textContent=record.region;row.children[3].textContent=record.time;
-    const status=registrationCheckin(event,record),badge=row.children[5].querySelector('.badge');
+    row.children[1].textContent=record.department;row.children[2].textContent=record.region;row.children[3].textContent=record.time;row.children[5].textContent=record.source||'员工自主报名';
+    const status=registrationCheckin(event,record),badge=row.children[6].querySelector('.badge');
     badge.textContent=status;badge.className='badge '+(status==='已签到'?'badge-success':status==='未签到'?'badge-warn':'badge-default');
     tbody.append(row);
   }
@@ -2720,10 +2922,24 @@ function showEvent(id){
   $('#event-detail-deadline').textContent='报名截止 '+data.deadline;$('#event-detail-owner').textContent=data.owner;
   $('#event-detail-description').textContent=data.description;$('#event-detail-scope').textContent=data.region+' · '+data.audience;$('#event-detail-place').textContent=data.place;
   const closed=data.status==='已结束';
+  const hasSurvey=Boolean(data.surveyTemplate&&data.surveyTemplate!=='none');
+  $('#event-view-survey').hidden=!hasSurvey;
+  $('#event-view-survey').disabled=!closed;
+  $('#event-view-survey').title=closed?'查看员工 IM 提交的满意度汇总':'活动结束后开放满意度结果';
+  eventSurveyAdmin.hidden=!hasSurvey;
   $('#event-detail-result').hidden=!closed;
   $('#event-detail-action-title').textContent=closed?'活动结果':data.status==='已终止'?'活动已终止':'报名与执行概览';
   $('#event-detail-action-copy').textContent=closed?'查看活动参与、签到及反馈结果。':data.status==='已终止'?'终止原因：'+data.terminationReason+'。已报名记录保留，不再接收新报名。':'报名由员工在 IM 端完成；管理员可查看人数和执行状态。';
   if(closed){$('#event-result-attendance').textContent=data.attendance;$('#event-result-feedback').textContent=data.feedback}
+  eventSurveyAdmin.querySelector('small').textContent=data.surveyTemplate&&data.surveyTemplate!=='none'?(closed?'模板：'+(data.surveyName||'5 分满意度与建议')+' · 已提交 '+(data.satisfactionResponses||0)+' 人 · 平均 '+((data.satisfactionTotal||0)/Math.max(1,data.satisfactionResponses||0)).toFixed(1)+' / 5 分':'已配置 '+(data.surveyName||'5 分满意度与建议')+' · 活动结束后开放'):'未配置满意度模板';
+  eventSurveyBreakdown.replaceChildren();
+  eventSurveyBreakdown.hidden=!hasSurvey;
+  if(!eventSurveyBreakdown.hidden)surveyQuestionsFor(data).forEach((question,index)=>{
+    const row=document.createElement('div'),name=document.createElement('strong'),score=document.createElement('span');
+    row.className='v5-row';name.textContent=question;score.className='v5-muted';
+    score.textContent=closed?(data.satisfactionResponses?((data.satisfactionQuestionTotals?.[index]||0)/data.satisfactionResponses).toFixed(1)+' / 5 分':'暂无评价'):'待活动结束';
+    row.append(name,score);eventSurveyBreakdown.append(row);
+  });
   navigate('culture-event-detail');
 }
 document.addEventListener('click',e=>{const button=e.target.closest('[data-event-detail]');if(button)showEvent(button.dataset.eventDetail)});
@@ -2748,8 +2964,25 @@ function showEmployeeEvent(id,{preview=false}={}){
   $('#employee-event-scope').textContent=data.region+' · '+data.audience;$('#employee-event-place').textContent=data.place;
   const ended=data.status==='已结束',open=data.status==='进行中'&&!data.registered&&data.count<data.capacity;
   $('#event-detail-join').hidden=!open;$('#event-detail-join').disabled=preview;$('#employee-event-result').hidden=!ended;
+  const attendee=registrationsFor(id).find(record=>record.employeeId==='01842');
+  const canSurvey=ended&&data.registered&&attendee?.checkedIn&&data.surveyTemplate&&data.surveyTemplate!=='none';
+  employeeSurvey.hidden=!canSurvey;
+  employeeSurvey.querySelector('h3').textContent=data.surveyName||'活动满意度';
+  const surveyFields=$('#event-survey-questions');surveyFields.replaceChildren();
+  if(canSurvey)surveyQuestionsFor(data).forEach((question,index)=>{
+    const group=document.createElement('div'),label=document.createElement('label'),select=document.createElement('select');
+    group.className='form-group';label.className='form-label';label.htmlFor='event-survey-rating-'+index;label.textContent=question+' *';
+    select.className='form-input';select.id=label.htmlFor;select.dataset.surveyRating='';select.required=true;
+    for(const [value,text] of [['','请选择'],['5','5 分 · 非常满意'],['4','4 分 · 满意'],['3','3 分 · 一般'],['2','2 分 · 不满意'],['1','1 分 · 非常不满意']])select.add(new Option(text,value));
+    select.value=String(data.employeeSurvey?.ratings?.[index]||data.employeeSurvey?.rating||'');
+    group.append(label,select);surveyFields.append(group);
+  });
+  $('#event-survey-comment').value=data.employeeSurvey?.comment||'';
+  employeeSurvey.querySelector('button[type="submit"]').hidden=Boolean(data.surveySubmitted)||preview;
+  employeeSurvey.querySelectorAll('select,textarea').forEach(field=>field.disabled=Boolean(data.surveySubmitted)||preview);
+  employeeSurvey.querySelector('.v5-muted').textContent=data.surveySubmitted?'已提交，感谢反馈。':preview?'管理端预览只读；员工完成活动后在 IM 端提交。':'每位参与员工只能提交一次；管理员可查看活动汇总。';
   $('#employee-event-action-title').textContent=ended?'活动结果':data.status==='已终止'?'活动已终止':data.status==='未开始'?'尚未开放报名':data.registered?'已报名':'报名参加';
-  $('#employee-event-action-copy').textContent=preview&&open?'员工本人在 IM 端可报名；管理端预览不可提交。':ended?'报名已结束，查看参与和反馈结果。':data.status==='已终止'?'活动已提前终止，不再接收报名；已提交的报名记录保留。':data.status==='未开始'?'活动尚未开放报名。':data.registered?'报名记录已生成，请留意活动通知。':'确认活动时间与适用范围后报名。';
+  $('#employee-event-action-copy').textContent=preview&&open?'员工本人在 IM 端可报名；管理端预览不可提交。':ended?'报名已结束，查看参与和反馈结果。':data.status==='已终止'?'活动已提前终止，不再接收报名；已提交的报名记录保留。':data.status==='未开始'?'活动尚未开放报名。':data.registered?(data.mandatory?'已按适用范围由系统自动报名，请留意活动通知。':'报名记录已生成，请留意活动通知。'):'确认活动时间与适用范围后报名。';
   if(ended){$('#employee-event-attendance').textContent=data.attendance;$('#employee-event-feedback').textContent=data.feedback}
   if(window.lucide)lucide.createIcons();
   navigate('employee-event-detail');
@@ -2757,12 +2990,23 @@ function showEmployeeEvent(id,{preview=false}={}){
 document.addEventListener('click',e=>{const button=e.target.closest('[data-employee-event-detail]');if(button)showEmployeeEvent(button.dataset.employeeEventDetail)});
 $('#event-detail-join').onclick=()=>{
   const data=eventData[selectedEvent];if(employeeEventPreview||data.status!=='进行中'||data.registered||data.count>=data.capacity)return;
-  registrationsFor(selectedEvent).push({employeeId:'01842',name:'陈晓',department:'产品研发中心',region:'上海',time:new Date().toLocaleString('sv-SE',{timeZone:'Asia/Shanghai',hour12:false}).slice(0,16),checkedIn:false});
+  registrationsFor(selectedEvent).push({employeeId:'01842',name:'陈晓',department:'产品研发中心',region:'上海',time:new Date().toLocaleString('sv-SE',{timeZone:'Asia/Shanghai',hour12:false}).slice(0,16),checkedIn:false,source:'员工自主报名'});
   data.count++;data.registered=true;const row=$('#event-list-rows tr[data-event="'+selectedEvent+'"]');row.children[2].textContent=data.count+' / '+data.capacity;
   $('#event-detail-count').textContent=data.count+' / '+data.capacity;
   $('#employee-event-count').textContent=data.count+' / '+data.capacity;$('#event-detail-join').hidden=true;renderActivityRow(selectedEvent);updateActivitySummary();renderRegistrations();
   $('#employee-event-action-title').textContent='已报名';$('#employee-event-action-copy').textContent='报名记录已生成，请留意活动通知。';toast('报名已记录：'+data.title);
 };
+employeeSurvey.addEventListener('submit',event=>{
+  event.preventDefault();const data=eventData[selectedEvent],attendee=registrationsFor(selectedEvent).find(record=>record.employeeId==='01842');
+  if(employeeEventPreview||data.status!=='已结束'||!attendee?.checkedIn||!data.surveyTemplate||data.surveyTemplate==='none'||data.surveySubmitted)return;
+  const ratings=Array.from(employeeSurvey.querySelectorAll('[data-survey-rating]'),field=>Number(field.value));
+  if(ratings.length!==surveyQuestionsFor(data).length||ratings.some(rating=>rating<1||rating>5))return;
+  data.satisfactionResponses=(data.satisfactionResponses||0)+1;
+  data.satisfactionTotal=(data.satisfactionTotal||0)+ratings.reduce((sum,rating)=>sum+rating,0)/ratings.length;
+  data.satisfactionQuestionTotals=surveyQuestionsFor(data).map((_,index)=>(data.satisfactionQuestionTotals?.[index]||0)+ratings[index]);
+  data.surveySubmitted=true;data.employeeSurvey={ratings,comment:employeeSurvey.elements.comment.value.trim()};
+  showEmployeeEvent(selectedEvent);toast('满意度评价已提交，管理端汇总已更新');
+});
 function filterActivities(){
   const status=$('#culture-events [data-tab].active')?.dataset.tab||'全部',region=$('#event-region').value;
   const type=$('#event-type-filter').value,owner=$('#event-owner-filter').value,keyword=$('#event-keyword-filter').value.trim().toLowerCase();
@@ -2778,7 +3022,7 @@ function filterEmployeeEvents(){
   updateFilteredRows('#employee-event-rows tr',row=>{
     const data=eventData[row.dataset.employeeEvent];
     return (!joined||data.registered)&&(!status||(data.status==='进行中'?'报名中':data.status)===status)&&(!keyword||data.title.toLowerCase().includes(keyword));
-  },'#employee-event-count','#employee-event-empty','项活动');
+  },'#employee-event-list-count','#employee-event-empty','项活动');
   $('#employee-event-empty').textContent=joined?'当前条件下没有本人报名的活动。':'没有符合条件的活动，请调整筛选条件。';
 }
 document.querySelectorAll('#employee-events [data-employee-event-tab]').forEach(tab=>tab.addEventListener('click',()=>{
@@ -2792,9 +3036,34 @@ const learningCourses={
   collaboration:{title:'跨地区协作实践',time:'11/16 10:00',deadline:'11/15 18:00',capacity:50,count:34,status:'报名中',mode:'线上培训',regions:['上海','新加坡'],audience:'适用地区全员',scope:'上海、新加坡 · 全员',signIn:true,assessment:true,checkinStart:'11/16 09:45',checkinEnd:'11/16 10:30',checkinState:'pending',signedCount:0,evaluatedCount:0,registered:false,record:null,samples:[{id:'00564',name:'周岳',source:'员工 IM 报名',signedAt:'',evaluation:null}]},
   onboarding:{title:'员工制度入门',time:'09/18 15:00',deadline:'09/17 18:00',capacity:45,count:45,status:'已结束',mode:'线上培训',regions:['上海','新加坡'],audience:'适用地区全员',scope:'上海、新加坡 · 全员',signIn:true,assessment:true,checkinStart:'09/18 14:45',checkinEnd:'09/18 15:30',checkinState:'closed',signedCount:43,evaluatedCount:43,registered:false,record:null,samples:[{id:'02719',name:'林可',source:'员工 IM 报名',signedAt:'09/18 15:02',evaluation:{result:'通过',comment:'已掌握制度要点',by:'林琦',time:'09/19 10:00'}}]}
 };
+const trainingPlans={
+  'training-manager-camp':{title:'新任主管管理训练营',owner:'林琦 · 学习发展组',mode:'线上培训',start:'2026-11-12T14:00',end:'2026-11-12T16:00',region:['上海','新加坡'],audience:'新任主管',material:'管理者手册 v2.1 · 知识库',course:'collaboration',status:'进行中'}
+};
+let selectedTrainingPlan='training-manager-camp';
 let selectedLearningCourse='collaboration';
 let selectedEvaluationRecord=null;
 const demoLearner={id:'01842',name:'陈晓',region:'上海'};
+function renderTrainingDetail(){
+  const plan=trainingPlans[selectedTrainingPlan];if(!plan)return;
+  $('#training-detail-title').textContent=plan.title;
+  const status=$('#training-detail-status');status.textContent=plan.status;status.className='badge '+(plan.status==='进行中'?'badge-info':'badge-success');
+  const fields={owner:plan.owner,mode:plan.mode,start:formatDateTime(plan.start),end:formatDateTime(plan.end),regions:plan.region.join('、'),audience:plan.audience,material:plan.material};
+  for(const [key,value] of Object.entries(fields))$('#training-detail-'+key).textContent=value;
+  const course=learningCourses[plan.course];$('#training-detail-empty').hidden=Boolean(course);$('#training-detail-courses').hidden=!course;
+  if(!course)return;
+  $('#training-detail-course-name').textContent=course.title;
+  $('#training-detail-course-time').textContent=course.time;
+  const courseStatus=$('#training-detail-course-status');courseStatus.textContent=course.status;courseStatus.className='badge '+(course.status==='已结束'?'badge-success':'badge-info');
+  $('#training-detail-signed').textContent=course.signIn?course.signedCount+' / '+course.count:'不要求';
+  $('#training-detail-evaluated').textContent=course.assessment?course.evaluatedCount+' / '+course.count:'不要求';
+}
+function openTrainingDetail(id){
+  if(!trainingPlans[id])return;
+  selectedTrainingPlan=id;renderTrainingDetail();navigate('culture-training-detail');
+}
+$('#training-detail-course').onclick=()=>{
+  const plan=trainingPlans[selectedTrainingPlan];if(plan?.course)openLearningAdmin(plan.course,selectedTrainingPlan);
+};
 function filterEmployeeTraining(){
   const status=$('#employee-training-status').value,keyword=$('#employee-training-keyword').value.trim().toLowerCase();
   updateFilteredRows('#employee-training-rows tr',row=>(!status||row.dataset.status===status)&&(!keyword||row.dataset.title.toLowerCase().includes(keyword)),'#employee-training-count','#employee-training-empty','项计划');
@@ -2802,8 +3071,8 @@ function filterEmployeeTraining(){
 function renderEmployeeTraining(){
   const tbody=$('#employee-training-rows');tbody.replaceChildren();
   const plans=[...document.querySelectorAll('#learning-admin-rows tr[data-learning-kind="培训计划"]')].filter(row=>row.dataset.employeeAssigned!=='false');
-  plans.forEach((source,index)=>{
-    const id=source.dataset.trainingId||'employee-plan-'+index;source.dataset.trainingId=id;
+  plans.forEach(source=>{
+    const id=source.dataset.trainingId;
     const row=document.createElement('tr');row.dataset.trainingId=id;
     row.dataset.title=source.querySelector('strong').textContent;row.dataset.status=source.querySelector('.badge').textContent;
     row.innerHTML='<td><strong></strong></td><td></td><td>培训计划指派</td><td><span class="badge"></span></td><td><button type="button" class="btn btn-ghost btn-sm" data-employee-training-view>查看安排</button></td>';
@@ -2843,6 +3112,7 @@ function learningTime(){return new Date().toLocaleString('zh-CN',{timeZone:'Asia
 function updatePlanProgress(id){
   const course=learningCourses[id];
   document.querySelectorAll('#learning-admin-rows tr[data-plan-course="'+id+'"] [data-plan-progress]').forEach(el=>{el.textContent='关联课程进度：已签到 '+course.signedCount+' / '+course.count+' · 已评价 '+course.evaluatedCount+' / '+course.count});
+  if(trainingPlans[selectedTrainingPlan]?.course===id)renderTrainingDetail();
 }
 function renderEmployeeCourses(){
   const tbody=$('#employee-learning-rows');tbody.replaceChildren();
@@ -2924,8 +3194,16 @@ function renderLearningAdmin(){
   $('#admin-checkin-close').disabled=!course.signIn||course.checkinState!=='open';
   renderLearningParticipants(course);updatePlanProgress(selectedLearningCourse);
 }
-function openLearningAdmin(id){
+function openLearningAdmin(id,returnPlan=null){
   if(!learningCourses[id])return;
+  const back=$('#culture-learning-course .v5-back');
+  back.href=returnPlan?'#culture-training-detail':'#culture-learning';
+  back.innerHTML='<i data-lucide="arrow-left"></i> '+(returnPlan?'返回培训计划详情':'返回课程列表');
+  back.onclick=()=>{
+    if(returnPlan){selectedTrainingPlan=returnPlan;renderTrainingDetail()}
+    else{document.querySelectorAll('#culture-learning [data-learning-tab]').forEach(tab=>tab.classList.toggle('active',tab.dataset.learningTab==='课程'));filterLearning()}
+  };
+  if(window.lucide)lucide.createIcons();
   selectedLearningCourse=id;$('#course-evaluation-form').hidden=true;renderLearningAdmin();navigate('culture-learning-course');
 }
 function learningRecord(course,id){return id===demoLearner.id?course.record:course.samples.find(record=>record.id===id)}
@@ -2988,13 +3266,15 @@ function addTraining(data){
     renderEmployeeCourses();
     const option=$('#training-course');option.add(new Option(data.title.trim(),id));
   }else{
+    const id='training-'+Date.now();row.dataset.trainingId=id;
+    trainingPlans[id]={title:data.title.trim(),owner:data.owner,mode:data.mode,start:data.start,end:data.end,region:[...data.region],audience:data.audience,material:data.material,course:data.course,status:'进行中'};
     row.dataset.employeeAssigned=String(data.region.includes(demoLearner.region)&&['适用地区全员','新任主管'].includes(data.audience));
     row.children[2].textContent='不适用';row.children[2].className='v5-muted';
     const label=document.createElement('span');label.className='v5-muted';label.textContent='无需报名';row.children[4].append(label);
+    const button=document.createElement('button');button.type='button';button.className='btn btn-ghost btn-sm';button.dataset.trainingDetail=id;button.textContent='查看进度';row.children[4].append(button);
     if(linkedCourse){
       row.dataset.planCourse=data.course;
       const progress=document.createElement('small');progress.className='v5-muted';progress.dataset.planProgress='';row.children[0].append(document.createElement('br'),progress);
-      const button=document.createElement('button');button.type='button';button.className='btn btn-ghost btn-sm';button.dataset.courseAdmin=data.course;button.textContent='查看进度';row.children[4].append(button);
       if(data.region.includes(demoLearner.region)&&data.audience==='适用地区全员'&&!linkedCourse.registered&&linkedCourse.status!=='已结束'&&linkedCourse.count<linkedCourse.capacity){
         linkedCourse.registered=true;linkedCourse.record={id:demoLearner.id,name:demoLearner.name,source:'培训计划指派',signedAt:'',evaluation:null};linkedCourse.count++;
         const count=$('#learning-admin-rows tr[data-course-id="'+data.course+'"] [data-course-count]');if(count)count.textContent=linkedCourse.count+' / '+linkedCourse.capacity;
@@ -3006,9 +3286,153 @@ function addTraining(data){
   $('#learning-admin-rows').prepend(row);
   renderEmployeeTraining();
   if(!isCourse&&linkedCourse)updatePlanProgress(data.course);
-  document.querySelectorAll('#culture-learning [data-learning-tab]').forEach(tab=>tab.classList.toggle('active',tab.dataset.learningTab==='全部'));
+  document.querySelectorAll('#culture-learning [data-learning-tab]').forEach(tab=>tab.classList.toggle('active',tab.dataset.learningTab===data.kind));
   $('#learning-status-filter').value='';$('#learning-keyword-filter').value='';filterLearning();
 }
+const developmentPlans={
+  'dev-1':{employeeId:'01842',employee:'陈晓',owner:'林琦',goal:'独立主持跨地区项目复盘',status:'进行中',start:'2026-10-24',weeks:[
+    {goal:'梳理跨团队协作问题',due:'2026-10-30',progress:60,logs:[{actor:'林琦 · HRBP',time:'10/29 16:00',note:'问题清单已初步完成，还需补充新加坡团队反馈。',progress:60}]},
+    {goal:'完成一次跨团队协调实践',due:'2026-11-06',progress:0,logs:[]},
+    {goal:'主持项目复盘并形成行动项',due:'2026-11-13',progress:0,logs:[]},
+    {goal:'提交最终改进方案',due:'2026-11-20',progress:0,logs:[]}
+  ]},
+  'dev-2':{employeeId:'02719',employee:'林可',owner:'林琦',goal:'独立完成新员工融入任务',status:'进行中',start:'2026-11-02',weeks:[
+    {goal:'熟悉团队流程',due:'2026-11-08',progress:0,logs:[]},
+    {goal:'完成入职知识学习',due:'2026-11-15',progress:0,logs:[]}
+  ]}
+};
+let selectedDevelopment='dev-1',editingDevelopment=null,selectedDevelopmentWeek=null;
+let selectedEmployeeDevelopment=null;
+function renderEmployeeDevelopment(){
+  const plans=Object.entries(developmentPlans).filter(([,plan])=>plan.employeeId===demoLearner.id);
+  const rows=$('#employee-development-rows');rows.replaceChildren();
+  $('#employee-development-count').textContent=plans.length+' 项计划';
+  $('#employee-development-empty').hidden=plans.length!==0;
+  for(const [id,plan] of plans){
+    const row=document.createElement('tr');row.innerHTML='<td><strong></strong><br><small class="v5-muted"></small></td><td></td><td></td><td><span class="badge"></span></td><td><button type="button" class="btn btn-ghost btn-sm">查看进度</button></td>';
+    row.children[0].querySelector('strong').textContent=plan.goal;
+    row.children[0].querySelector('small').textContent='员工 ID '+plan.employeeId;
+    row.children[1].textContent=plan.owner;
+    row.children[2].textContent=plan.start;
+    const badge=row.querySelector('.badge');badge.textContent=plan.status;badge.className='badge '+(plan.status==='进行中'?'badge-info':plan.status==='已完成'?'badge-success':'badge-default');
+    const button=row.querySelector('button'),expanded=selectedEmployeeDevelopment===id;
+    button.dataset.employeeDevelopment=id;button.textContent=expanded?'收起进度':'查看进度';button.setAttribute('aria-expanded',String(expanded));button.setAttribute('aria-controls','employee-development-detail');rows.append(row);
+  }
+  if(!plans.some(([id])=>id===selectedEmployeeDevelopment))selectedEmployeeDevelopment=null;
+  const plan=developmentPlans[selectedEmployeeDevelopment],panel=$('#employee-development-detail');panel.hidden=!plan||plan.employeeId!==demoLearner.id;
+  if(panel.hidden)return;
+  $('#employee-development-goal').textContent=plan.goal;
+  $('#employee-development-people').textContent='HR 负责人 '+plan.owner+' · 开始于 '+plan.start;
+  const state=$('#employee-development-state');state.textContent=plan.status;state.className='badge '+(plan.status==='进行中'?'badge-info':plan.status==='已完成'?'badge-success':'badge-default');
+  const weeks=$('#employee-development-weeks');weeks.replaceChildren();
+  plan.weeks.forEach((week,index)=>{
+    const row=document.createElement('div');row.className='v5-plan-week';row.innerHTML='<strong></strong><div><span></span><br><small class="v5-muted"></small></div><span class="badge"></span><span class="v5-muted"></span>';
+    row.querySelector('strong').textContent='第 '+(index+1)+' 周';row.querySelector('div span').textContent=week.goal;
+    row.querySelector('small').textContent='到期 '+week.due+(week.logs.length?' · '+week.logs.at(-1).actor+'：'+week.logs.at(-1).note:' · 尚无跟进记录');
+    const status=developmentWeekStatus(week),badge=row.querySelector('.badge');badge.textContent=status;badge.className='badge '+(status==='延期'?'badge-warn':status==='已完成'?'badge-success':'badge-default');
+    row.lastElementChild.textContent=week.progress+'%';weeks.append(row);
+  });
+}
+document.addEventListener('click',event=>{
+  const button=event.target.closest('[data-employee-development]');if(!button)return;
+  const id=button.dataset.employeeDevelopment;if(developmentPlans[id]?.employeeId!==demoLearner.id)return;
+  selectedEmployeeDevelopment=selectedEmployeeDevelopment===id?null:id;renderEmployeeDevelopment();
+  if(selectedEmployeeDevelopment)$('#employee-development-detail').scrollIntoView({block:'nearest',behavior:'smooth'});
+});
+function renderLearningDevelopmentSummary(){
+  const rows=$('#learning-development-rows'),ownerFilter=$('#development-owner-filter'),previousOwner=ownerFilter.value;rows.replaceChildren();
+  ownerFilter.replaceChildren(new Option('全部 HR 负责人',''),...Array.from(new Set(Object.values(developmentPlans).map(plan=>plan.owner))).map(owner=>new Option(owner,owner)));
+  ownerFilter.value=[...ownerFilter.options].some(option=>option.value===previousOwner)?previousOwner:'';
+  for(const [id,plan] of Object.entries(developmentPlans)){
+    const row=document.createElement('tr');row.innerHTML='<td><strong></strong><br><small class="v5-muted"></small></td><td></td><td></td><td><span class="badge"></span></td><td><button type="button" class="btn btn-ghost btn-sm">查看计划</button></td>';
+    row.dataset.developmentId=id;
+    row.children[0].querySelector('strong').textContent=plan.employee;row.children[0].querySelector('small').textContent=plan.employeeId;
+    row.children[1].textContent=plan.goal;row.children[2].textContent=plan.owner;
+    const badge=row.querySelector('.badge');badge.textContent=plan.status;badge.className='badge '+(plan.status==='进行中'?'badge-info':plan.status==='已完成'?'badge-success':'badge-default');
+    row.querySelector('button').dataset.developmentSelect=id;rows.append(row);
+  }
+  filterDevelopmentPlans();
+}
+function filterDevelopmentPlans(){
+  const status=$('#development-status-filter').value,owner=$('#development-owner-filter').value,keyword=$('#development-keyword-filter').value.trim().toLowerCase();
+  let visible=0;
+  $('#learning-development-rows').querySelectorAll('tr').forEach(row=>{
+    const plan=developmentPlans[row.dataset.developmentId];
+    row.hidden=Boolean((status&&plan.status!==status)||(owner&&plan.owner!==owner)||(keyword&&!(plan.employee+' '+plan.employeeId+' '+plan.goal).toLowerCase().includes(keyword)));
+    if(!row.hidden)visible++;
+  });
+  $('#learning-development-empty').hidden=visible!==0;
+  if($('#culture-learning [data-learning-tab="员工发展计划"]').classList.contains('active'))$('#learning-list-count').textContent=visible+' / '+Object.keys(developmentPlans).length+' 项计划';
+}
+['#development-status-filter','#development-owner-filter'].forEach(selector=>$(selector).addEventListener('change',filterDevelopmentPlans));
+$('#development-keyword-filter').addEventListener('input',filterDevelopmentPlans);
+$('#development-filter-reset').onclick=()=>{$('#development-status-filter').value='';$('#development-owner-filter').value='';$('#development-keyword-filter').value='';filterDevelopmentPlans()};
+const developmentBells=['culture-learning','culture-development'].map(id=>$('#'+id+' .win-chrome-actions [title="通知"]')).filter(Boolean);
+developmentBells.forEach(button=>{delete button.dataset.toast;button.onclick=()=>{
+  const next=Object.entries(developmentPlans).find(([,plan])=>plan.status==='进行中'&&plan.weeks.some(developmentOverdue));
+  if(!next){toast('当前没有需要跟进的延期周目标');return}
+  selectedDevelopment=next[0];$('#development-form-panel').hidden=true;renderDevelopment();navigate('culture-development');$('#development-alert-panel').scrollIntoView({block:'nearest'});
+}});
+function developmentOverdue(week){return week.progress<100&&week.due<new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Shanghai'})}
+function developmentWeekStatus(week){return week.progress===100?'已完成':developmentOverdue(week)?'延期':week.progress>0?'进行中':'待跟进'}
+function renderDevelopment(){
+  renderLearningDevelopmentSummary();
+  const alerts=Object.entries(developmentPlans).flatMap(([id,item])=>item.status==='进行中'?item.weeks.flatMap((week,index)=>developmentOverdue(week)?[{id,week,index}]:[]):[]);
+  developmentBells.forEach(button=>{button.title='查看 '+alerts.length+' 项延期通知';button.setAttribute('aria-label',button.title)});
+  const currentAlerts=alerts.filter(alert=>alert.id===selectedDevelopment),list=$('#development-alert-list');list.replaceChildren();
+  $('#development-alert-panel').hidden=!$('#development-form-panel').hidden||currentAlerts.length===0;
+  $('#development-alert-count').textContent=currentAlerts.length+' 项待跟进';
+  for(const alert of currentAlerts){const row=document.createElement('div');row.className='v5-row';row.innerHTML='<div><strong></strong><small></small></div><button type="button" class="btn btn-secondary btn-sm">记录进度</button>';row.querySelector('strong').textContent='第 '+(alert.index+1)+' 周延期';row.querySelector('small').textContent=alert.week.goal+' · 到期 '+alert.week.due+' · 当前 '+alert.week.progress+'%';row.querySelector('button').dataset.developmentWeek=String(alert.index);list.append(row)}
+  renderDevelopmentDetail();
+  renderEmployeeDevelopment();
+}
+function renderDevelopmentDetail(){
+  const plan=developmentPlans[selectedDevelopment],panel=$('#development-detail-panel');panel.hidden=!plan||!$('#development-form-panel').hidden;if(!plan)return;
+  $('#development-page-title').textContent=plan.employee+' · 员工发展计划';
+  $('#development-page-subtitle').textContent='员工 ID '+plan.employeeId+' · '+plan.status+' · HR 负责人 '+plan.owner;
+  $('#development-detail-title').textContent=plan.employee+' · '+plan.goal;
+  $('#development-detail-summary').textContent='员工 ID '+plan.employeeId+' · HR 负责人 '+plan.owner+' · 从 '+plan.start+' 起按周跟进';
+  const badge=$('#development-detail-status');badge.textContent=plan.status;badge.className='badge '+(plan.status==='进行中'?'badge-info':plan.status==='已完成'?'badge-success':'badge-default');
+  $('#development-plan-actions').hidden=plan.status!=='进行中';
+  const list=$('#development-week-list');list.replaceChildren();
+  plan.weeks.forEach((week,index)=>{const row=document.createElement('div');row.className='v5-plan-week';row.innerHTML='<strong></strong><div><span></span><br><small class="v5-muted"></small></div><span class="badge"></span><button type="button" class="btn btn-secondary btn-sm">记录进度</button>';row.querySelector('strong').textContent='第 '+(index+1)+' 周';row.querySelector('span').textContent=week.goal;row.querySelector('small').textContent='到期 '+week.due+' · 进度 '+week.progress+'%'+(week.logs.length?' · 最新：'+week.logs.at(-1).actor+' '+week.logs.at(-1).note:'');const status=developmentWeekStatus(week);const statusBadge=row.querySelector('.badge');statusBadge.textContent=status;statusBadge.className='badge '+(status==='延期'?'badge-warn':status==='已完成'?'badge-success':'badge-default');const button=row.querySelector('button');button.dataset.developmentWeek=String(index);button.disabled=plan.status!=='进行中'||week.progress===100;list.append(row)});
+  $('#development-progress-form').hidden=true;
+}
+document.addEventListener('click',event=>{
+  const selected=event.target.closest('[data-development-select]');if(selected){selectedDevelopment=selected.dataset.developmentSelect;$('#development-form-panel').hidden=true;renderDevelopment();navigate('culture-development')}
+  const week=event.target.closest('[data-development-week]');if(week){selectedDevelopmentWeek=Number(week.dataset.developmentWeek);const item=developmentPlans[selectedDevelopment].weeks[selectedDevelopmentWeek];$('#development-progress-title').textContent='第 '+(selectedDevelopmentWeek+1)+' 周 · '+item.goal;$('#development-progress').value=String(item.progress);$('#development-progress-note').value='';$('#development-progress-form').hidden=false;$('#development-progress-note').focus()}
+});
+function openDevelopmentForm(id=null){
+  editingDevelopment=id;const form=$('#development-form');form.reset();$('#development-error').textContent='';$('#development-employee').disabled=Boolean(id);
+  $('#development-form-title').textContent=id?'修改员工发展计划':'新建员工发展计划';
+  $('#development-page-title').textContent=id?'修改员工发展计划':'新建员工发展计划';
+  $('#development-page-subtitle').textContent=id?'由 HR 调整计划，保存后继续跟进。':'由 HR 为指定员工配置目标和逐周跟进安排。';
+  if(id){const plan=developmentPlans[id];$('#development-employee').value=plan.employeeId;$('#development-owner').value=plan.owner;$('#development-goal').value=plan.goal;$('#development-start').value=plan.start;$('#development-weeks').value=String(plan.weeks.length);$('#development-week-goals').value=plan.weeks.map(week=>week.goal).join('\n')}
+  $('#development-form-panel').hidden=false;$('#development-detail-panel').hidden=true;$('#development-alert-panel').hidden=true;
+  $('#development-form-panel').scrollIntoView({block:'nearest'});
+}
+$('#development-cancel').onclick=()=>{const returningToList=!editingDevelopment;$('#development-form-panel').hidden=true;editingDevelopment=null;renderDevelopment();if(returningToList)navigate('culture-learning')};
+$('#development-form').onsubmit=event=>{
+  event.preventDefault();const form=event.currentTarget;if(!form.reportValidity())return;
+  const goals=$('#development-week-goals').value.split('\n').map(value=>value.trim()).filter(Boolean),weeks=Number($('#development-weeks').value),error=$('#development-error');error.textContent='';
+  if(goals.length!==weeks){error.textContent='请按每行一周填写 '+weeks+' 个周目标。';return}
+  const employee=$('#development-employee').selectedOptions[0].textContent.split(' · ')[0],start=$('#development-start').value;
+  if(!editingDevelopment&&Object.values(developmentPlans).some(plan=>plan.employeeId===$('#development-employee').value&&plan.status!=='已完成')){error.textContent='该员工已有进行中的培养计划，请先查看现有计划。';return}
+  const prior=editingDevelopment?developmentPlans[editingDevelopment]:null,id=editingDevelopment||'dev-'+Date.now();
+  if(prior?.weeks.slice(weeks).some(week=>week.progress>0||week.logs.length)){error.textContent='缩短周期会删除已有跟进记录，请保留对应周目标。';return}
+  const dates=goals.map((goal,index)=>{const date=new Date(start+'T00:00:00Z');date.setUTCDate(date.getUTCDate()+6+index*7);return {goal,due:date.toISOString().slice(0,10),progress:prior?.weeks[index]?.progress||0,logs:prior?.weeks[index]?.logs||[]}});
+  developmentPlans[id]={employeeId:$('#development-employee').value,employee,owner:$('#development-owner').value,goal:$('#development-goal').value.trim(),status:dates.every(week=>week.progress===100)?'已完成':'进行中',start,weeks:dates};
+  selectedDevelopment=id;editingDevelopment=null;$('#development-form-panel').hidden=true;renderDevelopment();toast(prior?'发展计划已更新，跟进记录已保留':'发展计划已保存，可开始每周跟进');
+};
+$('#development-edit').onclick=()=>openDevelopmentForm(selectedDevelopment);
+$('#development-progress-cancel').onclick=()=>{$('#development-progress-form').hidden=true};
+$('#development-progress-form').onsubmit=event=>{
+  event.preventDefault();if(!event.currentTarget.reportValidity())return;
+  const plan=developmentPlans[selectedDevelopment],week=plan.weeks[selectedDevelopmentWeek],progress=Number($('#development-progress').value);
+  week.progress=progress;week.logs.push({actor:'林琦 · HRBP',time:new Date().toLocaleString('zh-CN',{timeZone:'Asia/Shanghai',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}),note:$('#development-progress-note').value.trim(),progress});
+  if(plan.weeks.every(item=>item.progress===100))plan.status='已完成';renderDevelopment();toast('每周跟进已记录，延期通知同步更新');
+};
+renderDevelopment();
 renderEmployeeCourses();
 renderEmployeeTraining();
 renderLearningAdmin();
@@ -3016,9 +3440,10 @@ $('#employee-learning-status').addEventListener('change',filterEmployeeCourses);
 $('#employee-learning-keyword').addEventListener('input',filterEmployeeCourses);
 $('#employee-learning-reset').onclick=()=>{$('#employee-learning-status').value='';$('#employee-learning-keyword').value='';filterEmployeeCourses()};
 document.addEventListener('click',e=>{
-  const detail=e.target.closest('[data-course-detail]'),admin=e.target.closest('[data-course-admin]');
+  const detail=e.target.closest('[data-course-detail]'),admin=e.target.closest('[data-course-admin]'),plan=e.target.closest('[data-training-detail]');
   if(detail)showLearningCourse(detail.dataset.courseDetail);
   if(admin)openLearningAdmin(admin.dataset.courseAdmin);
+  if(plan)openTrainingDetail(plan.dataset.trainingDetail);
 });
 $('#employee-course-join').onclick=()=>{
   const course=learningCourses[selectedLearningCourse];if(course.registered||course.status!=='报名中'||course.count>=course.capacity)return;
@@ -3029,33 +3454,58 @@ $('#employee-course-join').onclick=()=>{
 function filterLearning(){
   const kind=$('#culture-learning [data-learning-tab].active').dataset.learningTab;
   const status=$('#learning-status-filter').value,keyword=$('#learning-keyword-filter').value.trim().toLowerCase();
-  updateFilteredRows('#culture-learning [data-comp="courses"] tbody tr',row=>(kind==='全部'||row.dataset.learningKind===kind)&&(!status||row.querySelector('.badge').textContent===status)&&(!keyword||row.children[0].textContent.toLowerCase().includes(keyword)),'#learning-list-count','#learning-list-empty','项');
+  const development=kind==='员工发展计划',course=kind==='课程';
+  learningDevelopment.hidden=!development;
+  $('#culture-learning [data-comp="courses"]').hidden=development;
+  $('#culture-learning [data-comp="learning-metrics"]').hidden=!course;
+  $('#culture-learning [data-comp="learning-record"]').hidden=!course;
+  developmentFilters.hidden=!development;
+  for(const control of ['#learning-status-filter','#learning-keyword-filter','#culture-learning [data-filter-reset]'])$(control).hidden=development;
+  $('#culture-learning [data-comp="courses"] h2').textContent=course?'课程列表':'培训计划列表';
+  $('#learning-list-empty').textContent=course?'没有符合条件的课程。':'没有符合条件的培训计划。';
+  const icon=learningCreate.querySelector('svg,i');learningCreate.replaceChildren(icon,document.createTextNode(' 新建'+(development?'发展计划':kind)));
+  if(development){filterDevelopmentPlans();return}
+  updateFilteredRows('#culture-learning [data-comp="courses"] tbody tr',row=>row.dataset.learningKind===kind&&(!status||row.querySelector('.badge').textContent===status)&&(!keyword||row.children[0].textContent.toLowerCase().includes(keyword)),'#learning-list-count','#learning-list-empty','项');
 }
 $('#learning-status-filter').addEventListener('change',filterLearning);
 $('#learning-keyword-filter').addEventListener('input',filterLearning);
 document.querySelectorAll('#culture-learning [data-learning-tab]').forEach(button=>button.onclick=()=>{
   document.querySelectorAll('#culture-learning [data-learning-tab]').forEach(tab=>tab.classList.toggle('active',tab===button));filterLearning();
 });
-for(const [type,target] of [['activity','culture-events'],['training','culture-learning']]){
-  const form=document.getElementById(type==='activity'?'activity-create-form':'training-create-form');
-  if(type==='training'){
-    form.addEventListener('change',e=>{if(e.target.name==='kind')syncTrainingKind(true);else if(e.target.name==='signIn')syncTrainingKind(false)});
-    syncTrainingKind(false);
+filterLearning();
+for(const [type,target] of [['activity','culture-events'],['training','culture-learning'],['course','culture-learning']]){
+  const form=document.getElementById(type==='activity'?'activity-create-form':type==='training'?'training-create-form':'course-create-form');
+  if(type==='course'){
+    form.addEventListener('change',e=>{if(e.target.name==='signIn')syncCourseCheckin()});
+    syncCourseCheckin();
+  }else if(type==='activity'){
+    form.addEventListener('change',e=>{if(e.target.name==='participation')syncActivityParticipation();else if(e.target.name==='surveyTemplate')syncActivitySurvey()});
+    syncActivityParticipation();syncActivitySurvey();
   }
   form.addEventListener('submit',e=>{
     e.preventDefault();const data=createFormData(form);if(!validateCreateForm(form,data))return;
     if(type==='activity'&&editingActivity){
       const record=eventData[editingActivity];if(Number(data.capacity)<record.count){$('#activity-form-error').textContent='报名上限不能少于已报名人数';return}
-      Object.assign(record,{title:data.title,type:data.type,description:data.description,owner:data.owner.split(' · ')[0],ownerValue:data.owner,place:data.place,start:data.start,end:data.end,deadlineValue:data.deadline,date:formatPeriod(data.start,data.end),deadline:formatDateTime(data.deadline),capacity:Number(data.capacity),region:data.region.join('、'),audience:data.audience});
+      if(record.mandatory&&(data.region.join('、')!==record.region||data.audience!==record.audience)){$('#activity-form-error').textContent='强制参加活动已自动报名；调整适用范围须先核对报名名单。';return}
+      Object.assign(record,{title:data.title,type:data.type,description:data.description,owner:data.owner.split(' · ')[0],ownerValue:data.owner,place:data.place,start:data.start,end:data.end,deadlineValue:data.deadline,date:formatPeriod(data.start,data.end),deadline:formatDateTime(data.deadline),capacity:Number(data.capacity),region:data.region.join('、'),audience:data.audience,surveyTemplate:data.surveyTemplate,surveyName:data.surveyName,surveyQuestions:data.surveyTemplate==='custom'?data.surveyQuestions:['整体满意度']});
       renderActivityRow(editingActivity);filterActivities();updateActivitySummary();navigate(target);toast('活动已更新，原编号及报名记录已保留');editingActivity=null;return;
     }
+    if(type==='activity'&&data.participation==='mandatory'&&Number(data.capacity)<eligibleActivityEmployees(data).length){$('#activity-form-error').textContent='报名上限不能少于适用员工人数';return}
     if(type==='activity')addActivity(data);else addTraining(data);
-    navigate(target);toast(type==='activity'?'活动已发布，报名人数从 0 开始累计':data.kind==='课程'?'课程已发布到员工 IM，可由员工自主报名':'培训计划已发布，无需报名');
+    navigate(target);toast(type==='activity'?(data.participation==='mandatory'?'活动已发布，适用员工已自动报名并通知':'活动已发布，报名人数从 0 开始累计'):data.kind==='课程'?'课程已发布到员工 IM，可由员工自主报名':'培训计划已发布，无需报名');
   });
 }
-$('#culture-learning [data-go="culture-learning-create"]').addEventListener('click',()=>{
-  $('#training-create-form').reset();$('#training-form-error').textContent='';syncTrainingKind(false);
+learningCreate.addEventListener('click',()=>{
+  const kind=$('#culture-learning [data-learning-tab].active').dataset.learningTab;
+  if(kind==='员工发展计划'){navigate('culture-development');openDevelopmentForm();return}
+  const course=kind==='课程',form=$(course?'#course-create-form':'#training-create-form');
+  form.reset();form.querySelector('.v5-form-error').textContent='';if(course)syncCourseCheckin();
+  navigate(course?'culture-course-create':'culture-learning-create');
 });
+document.querySelectorAll('[data-learning-return]').forEach(button=>button.addEventListener('click',()=>{
+  document.querySelectorAll('#culture-learning [data-learning-tab]').forEach(tab=>tab.classList.toggle('active',tab.dataset.learningTab===button.dataset.learningReturn));
+  filterLearning();
+}));
 const ruleLeadOptions={
   '员工异常':['发现后立即','发现后 1 小时'],
   '生日':['当天','提前 7 天','提前 14 天'],
@@ -3530,7 +3980,7 @@ document.addEventListener('click',e=>{
   const section=$('#'+button.dataset.filterReset),toolbar=button.closest('.v5-toolbar');
   toolbar.querySelectorAll('select').forEach(select=>select.selectedIndex=0);
   toolbar.querySelectorAll('input').forEach(input=>input.value='');
-  toolbar.querySelectorAll('.inline-tab').forEach((tab,index)=>tab.classList.toggle('active',index===0));
+  if(section.id!=='culture-learning')toolbar.querySelectorAll('.inline-tab').forEach((tab,index)=>tab.classList.toggle('active',index===0));
   listFilterRefresh[section.id]();
 });
 document.querySelectorAll('#culture-events [data-tab]').forEach(el=>el.onclick=()=>{document.querySelectorAll('#culture-events [data-tab]').forEach(x=>x.classList.remove('active'));el.classList.add('active');filterActivities()});
